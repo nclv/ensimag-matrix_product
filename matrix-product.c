@@ -5,47 +5,47 @@
 #define RANGE 100.0
 
 double** random_matrix(int n) {
-	double** matrix = malloc(n * sizeof(double*));
-	for (int i = 0; i < n; ++i) {
-		matrix[i] = malloc(n * sizeof(double));
-	}
-	for (int i = 0; i < n; ++i) {
-		for (int j = 0; j < n; ++j) {
-			matrix[i][j] = RANGE * ((double) rand() / RAND_MAX); 			
-		}
-	}
-	return matrix;
+    double** matrix = malloc(n * sizeof(double*));
+    for (int i = 0; i < n; ++i) {
+        matrix[i] = malloc(n * sizeof(double));
+    }
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            matrix[i][j] = RANGE * ((double)rand() / RAND_MAX);
+        }
+    }
+    return matrix;
 }
 
 void display_matrix(double** matrix, int n) {
-	for (int i = 0; i < n; ++i) {
-		for (int j = 0; j < n; ++j) {
-			printf("%f ", matrix[i][j]);
-		}
-		printf("\n");
-	}
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            printf("%f ", matrix[i][j]);
+        }
+        printf("\n");
+    }
 }
 
-void matrix_product_1(double **A, double **B, double** C, int n) {
-	for (int i = 0; i < n; ++i) {
-		for (int j = 0; j < n; ++j) {
-			for (int k = 0; k < n; ++k) {
-				C[i][j] += A[i][k] * B[k][j];
-			}
-		}
-		//printf("%d\n", i + 1);
-	}
+void matrix_product_1(double** A, double** B, double** C, int n) {
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            for (int k = 0; k < n; ++k) {
+                C[i][j] += A[i][k] * B[k][j];
+            }
+        }
+        //printf("%d\n", i + 1);
+    }
 }
 
-void matrix_product_2(double **A, double **B, double** C, int n) {
-	for (int i = 0; i < n; ++i) {
-		for (int k = 0; k < n; ++k) {
-			for (int j = 0; j < n; ++j) {
-				C[i][j] += A[i][k] * B[k][j];
-			}
-		}
-		//printf("%d\n", i + 1);
-	}
+void matrix_product_2(double** A, double** B, double** C, int n) {
+    for (int i = 0; i < n; ++i) {
+        for (int k = 0; k < n; ++k) {
+            for (int j = 0; j < n; ++j) {
+                C[i][j] += A[i][k] * B[k][j];
+            }
+        }
+        //printf("%d\n", i + 1);
+    }
 }
 
 void time_n(int n) {
@@ -77,12 +77,11 @@ void test() {
 		time_n(i);
 		printf("\n");
 	}	
-}
 
 int main() {
-	srand(time(NULL));
+    srand(time(NULL));
 
 	test();
 
-	return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }
