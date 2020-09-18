@@ -48,34 +48,41 @@ void matrix_product_2(double **A, double **B, double** C, int n) {
 	}
 }
 
-void test_1() {
+void time_n(int n) {
 	clock_t start, end;
 	double cpu_time_used;
-	double** A = random_matrix(2000);
-	double** B = random_matrix(2000);
+	double** A = random_matrix(n);
+	double** B = random_matrix(n);
 	
-	double** C = malloc(2000 * sizeof(double*));
-	for (int i = 0; i < 2000; ++i) {
-		C[i] = malloc(2000 * sizeof(double));
+	double** C = malloc(n * sizeof(double*));
+	for (int i = 0; i < n; ++i) {
+		C[i] = malloc(n * sizeof(double));
 	}	
 
 	start = clock();
-	matrix_product_1(A, B, C, 2000);
+	matrix_product_1(A, B, C, n);
 	end = clock();
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-	printf("matrix_product_1() took %f seconds to execute\n", cpu_time_used);
+	printf("matrix_product_1() took %f seconds to execute for an entry n = %d\n", cpu_time_used, n);
 	
 	start = clock();
-	matrix_product_2(A, B, C, 2000);
+	matrix_product_2(A, B, C, n);
 	end = clock();
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-	printf("matrix_product_2() took %f seconds to execute\n", cpu_time_used);
+	printf("matrix_product_2() took %f seconds to execute for an entry n = %d\n", cpu_time_used, n);
+}
+
+void test() {
+	for (int i = 100; i <= 1000; i += 100) {
+		time_n(i);
+		printf("\n");
+	}	
 }
 
 int main() {
 	srand(time(NULL));
 
-	test_1();
+	test();
 
 	return EXIT_SUCCESS;
 }
