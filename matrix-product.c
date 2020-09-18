@@ -76,7 +76,8 @@ void test() {
 	for (int i = 100; i <= 1000; i += 100) {
 		time_n(i);
 		printf("\n");
-	}	
+	}
+}	
 
 int main() {
     srand(time(NULL));
