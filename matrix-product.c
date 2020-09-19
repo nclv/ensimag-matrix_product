@@ -98,7 +98,10 @@ void test(void) {
     }
 }
 
-int main(void) {
+int main(int argc, char**argv) {
+	// To gather from command line
+	// size_t n = (argc == 2 ) ? atoi(argv[1]) : 100;
+	
     srand((unsigned int)time(NULL));
 
     test();
