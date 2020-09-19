@@ -12,6 +12,13 @@ double** init_matrix(long unsigned int n) {
     return matrix;
 }
 
+void free_matrix(double **matrix, long unsigned int n) {
+	for (size_t i = 0; i < n; ++i) {
+        free(matrix[i]);
+    }
+	free(matrix);
+}
+
 double** random_matrix(long unsigned int n) {
     double** matrix = init_matrix(n);
     for (size_t i = 0; i < n; ++i) {
@@ -58,10 +65,12 @@ void function_execution_time(double** A, double** B, double** C,
                              void (*matrix_product)(double**, double**, double**, long unsigned int)) {
     static clock_t start, end;
     static double cpu_time_used;
+
     start = clock();
     (*matrix_product)(A, B, C, n);
     end = clock();
     cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
+
     printf("%s took %f seconds to execute for an entry n = %ld\n", function_name, cpu_time_used, n);
 }
 
@@ -75,6 +84,10 @@ void time_n(long unsigned int n) {
 
     function_execution_time(A, B, C, n, functions[0], matrix_product_1);
     function_execution_time(A, B, C, n, functions[1], matrix_product_2);
+
+	free_matrix(A, n);
+	free_matrix(B, n);
+	free_matrix(C, n);
 }
 
 void test(void) {
