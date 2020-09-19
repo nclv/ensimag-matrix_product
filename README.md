@@ -27,6 +27,8 @@ The LL miss rates tells us there was some Last Level cache misses.
 ```gcc -DLEVEL1_DCACHE_LINESIZE=`getconf LEVEL1_DCACHE_LINESIZE` ```
 gain minimal pour `matrix_product_1()` : n = 800, 4.275619 -> 4.143644
 
+On ne peut pas se fier au dernier résultat (dernière valeur de n). Il est trop variable.
+
 # Q1.
 
 Le programme `(i, j, k)` est le plus long à l'exécution.

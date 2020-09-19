@@ -39,22 +39,31 @@ void display_matrix(double** matrix, int n) {
     }
 }
 
+/* Matric multiplication functions */
+
 void matrix_product_1(double** A, double** B, double** C, long unsigned int n) {
-    for (size_t i = 0; i < n; ++i) {
-        for (size_t j = 0; j < n; ++j) {
-            for (size_t k = 0; k < n; ++k) {
-                C[i][j] += A[i][k] * B[k][j];
+	size_t i, j, k;
+	double sum;
+    for (i = 0; i < n; ++i) {
+        for (j = 0; j < n; ++j) {
+			sum = 0;
+            for (k = 0; k < n; ++k) {
+                sum += A[i][k] * B[k][j];
             }
+			C[i][j] = sum;
         }
         //printf("%d\n", i + 1);
     }
 }
 
 void matrix_product_2(double** A, double** B, double** C, long unsigned int n) {
-    for (size_t i = 0; i < n; ++i) {
-        for (size_t k = 0; k < n; ++k) {
-            for (size_t j = 0; j < n; ++j) {
-                C[i][j] += A[i][k] * B[k][j];
+	size_t i, j, k;
+	double r;
+    for (i = 0; i < n; ++i) {
+        for (k = 0; k < n; ++k) {
+			r = A[i][k];
+            for (j = 0; j < n; ++j) {
+                C[i][j] += r * B[k][j];
             }
         }
         //printf("%d\n", i + 1);
@@ -98,7 +107,7 @@ void test(void) {
     }
 }
 
-int main(int argc, char**argv) {
+int main(void) {
 	// To gather from command line
 	// size_t n = (argc == 2 ) ? atoi(argv[1]) : 100;
 	
