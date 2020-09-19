@@ -4,6 +4,7 @@
 
 #define RANGE 100.0
 
+
 double** init_matrix(long unsigned int n) {
     double** matrix = malloc(n * sizeof(double*));
     for (size_t i = 0; i < n; ++i) {
@@ -91,7 +92,7 @@ void time_n(long unsigned int n) {
 }
 
 void test(void) {
-    for (size_t i = 100; i <= 1000; i += 100) {
+    for (size_t i = 100; i <= 800; i += 100) {
         time_n(i);
         printf("\n");
     }

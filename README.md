@@ -7,6 +7,18 @@ See :
  - https://www.quora.com/How-can-we-use-cache-s-for-optimization-of-matrix-multiplication
  - https://akkadia.org/drepper/cpumemory.pdf (6.2.1)
 
+# Commands
+
+```bash
+$valgrind --tool=cachegrind --log-file=valgrind-cachegrindijk.txt ./matrix-product
+matrix_product_1() took 9.052678 seconds to execute for an entry n = 500
+matrix_product_2() took 4.476539 seconds to execute for an entry n = 500
+```
+
+# Some infos
+
+```gcc -DLEVEL1_DCACHE_LINESIZE=`getconf LEVEL1_DCACHE_LINESIZE` ```
+gain minimal pour `matrix_product_1()` : n = 800, 4.275619 -> 4.143644
 
 # Q1.
 
