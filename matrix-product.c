@@ -4,13 +4,18 @@
 
 #define RANGE 100.0
 
-double** random_matrix(int n) {
+double** init_matrix(long unsigned int n) {
     double** matrix = malloc(n * sizeof(double*));
-    for (int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         matrix[i] = malloc(n * sizeof(double));
     }
-    for (int i = 0; i < n; ++i) {
-        for (int j = 0; j < n; ++j) {
+    return matrix;
+}
+
+double** random_matrix(long unsigned int n) {
+    double** matrix = init_matrix(n);
+    for (size_t i = 0; i < n; ++i) {
+        for (size_t j = 0; j < n; ++j) {
             matrix[i][j] = RANGE * ((double)rand() / RAND_MAX);
         }
     }
@@ -26,10 +31,10 @@ void display_matrix(double** matrix, int n) {
     }
 }
 
-void matrix_product_1(double** A, double** B, double** C, int n) {
-    for (int i = 0; i < n; ++i) {
-        for (int j = 0; j < n; ++j) {
-            for (int k = 0; k < n; ++k) {
+void matrix_product_1(double** A, double** B, double** C, long unsigned int n) {
+    for (size_t i = 0; i < n; ++i) {
+        for (size_t j = 0; j < n; ++j) {
+            for (size_t k = 0; k < n; ++k) {
                 C[i][j] += A[i][k] * B[k][j];
             }
         }
@@ -37,10 +42,10 @@ void matrix_product_1(double** A, double** B, double** C, int n) {
     }
 }
 
-void matrix_product_2(double** A, double** B, double** C, int n) {
-    for (int i = 0; i < n; ++i) {
-        for (int k = 0; k < n; ++k) {
-            for (int j = 0; j < n; ++j) {
+void matrix_product_2(double** A, double** B, double** C, long unsigned int n) {
+    for (size_t i = 0; i < n; ++i) {
+        for (size_t k = 0; k < n; ++k) {
+            for (size_t j = 0; j < n; ++j) {
                 C[i][j] += A[i][k] * B[k][j];
             }
         }
@@ -48,41 +53,41 @@ void matrix_product_2(double** A, double** B, double** C, int n) {
     }
 }
 
-void time_n(int n) {
-	clock_t start, end;
-	double cpu_time_used;
-	double** A = random_matrix(n);
-	double** B = random_matrix(n);
-	
-	double** C = malloc(n * sizeof(double*));
-	for (int i = 0; i < n; ++i) {
-		C[i] = malloc(n * sizeof(double));
-	}	
-
-	start = clock();
-	matrix_product_1(A, B, C, n);
-	end = clock();
-	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-	printf("matrix_product_1() took %f seconds to execute for an entry n = %d\n", cpu_time_used, n);
-	
-	start = clock();
-	matrix_product_2(A, B, C, n);
-	end = clock();
-	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-	printf("matrix_product_2() took %f seconds to execute for an entry n = %d\n", cpu_time_used, n);
+void function_execution_time(double** A, double** B, double** C,
+                             long unsigned int n, const char* function_name,
+                             void (*matrix_product)(double**, double**, double**, long unsigned int)) {
+    static clock_t start, end;
+    static double cpu_time_used;
+    start = clock();
+    (*matrix_product)(A, B, C, n);
+    end = clock();
+    cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
+    printf("%s took %f seconds to execute for an entry n = %ld\n", function_name, cpu_time_used, n);
 }
 
-void test() {
-	for (int i = 100; i <= 1000; i += 100) {
-		time_n(i);
-		printf("\n");
-	}
-}	
+void time_n(long unsigned int n) {
+    double** A = random_matrix(n);
+    double** B = random_matrix(n);
 
-int main() {
-    srand(time(NULL));
+    double** C = init_matrix(n);
 
-	test();
+    const char* functions[2] = {"matrix_product_1()", "matrix_product_2()"};
+
+    function_execution_time(A, B, C, n, functions[0], matrix_product_1);
+    function_execution_time(A, B, C, n, functions[1], matrix_product_2);
+}
+
+void test(void) {
+    for (size_t i = 100; i <= 1000; i += 100) {
+        time_n(i);
+        printf("\n");
+    }
+}
+
+int main(void) {
+    srand((unsigned int)time(NULL));
+
+    test();
 
     return EXIT_SUCCESS;
 }
