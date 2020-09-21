@@ -4,30 +4,64 @@
 
 #define RANGE 100.0
 
+/* Fonctions d'allocation et de libération de la mémoire */
 
-double** init_matrix(long unsigned int n) {
+double** allocate_matrix(long unsigned int n) {
     double** matrix = malloc(n * sizeof(double*));
-    for (size_t i = 0; i < n; ++i) {
+    size_t i;
+
+    for (i = 0; i < n; ++i) {
         matrix[i] = malloc(n * sizeof(double));
     }
     return matrix;
 }
 
-void free_matrix(double **matrix, long unsigned int n) {
-	for (size_t i = 0; i < n; ++i) {
-        free(matrix[i]);
+
+/*
+ * This way you get data locality and its associated cache/memory access benefits, 
+ * and you can treat the array as a double ** or a flattened 2D array (array[i * NumCols + j]) 
+ * interchangeably. You also have fewer calloc/free calls (2 versus NumRows + 1).
+*/
+double** allocate_matrix_continuous(long unsigned int n) {
+    double** matrix;
+    size_t i;
+
+    matrix = (double**)malloc(n * sizeof(double*));
+    matrix[0] = (double*)calloc(n * n, sizeof(double));
+    // single contiguous memory allocation for entire array
+    for (i = 1; i < n; ++i) {
+        matrix[i] = matrix[i - 1] + n;
     }
-	free(matrix);
+    return matrix;
 }
 
-double** random_matrix(long unsigned int n) {
-    double** matrix = init_matrix(n);
+void free_matrix(double** matrix, long unsigned int n) {
+    for (size_t i = 0; i < n; ++i) {
+        free(matrix[i]);
+    }
+    free(matrix);
+}
+
+void free_matrix_continuous(double** matrix, long unsigned int n) {
+    (void)n;
+    free(matrix[0]);
+    free(matrix);
+}
+
+void random_matrix2d(double** matrix, long unsigned int n) {
     for (size_t i = 0; i < n; ++i) {
         for (size_t j = 0; j < n; ++j) {
             matrix[i][j] = RANGE * ((double)rand() / RAND_MAX);
         }
     }
-    return matrix;
+}
+
+void random_matrix1d(double* array, long unsigned int n) {
+    for (size_t i = 0; i < n; ++i) {
+        for (size_t j = 0; j < n; ++j) {
+            array[i * n + j] = RANGE * ((double)rand() / RAND_MAX);
+        }
+    }
 }
 
 void display_matrix(double** matrix, int n) {
@@ -39,40 +73,66 @@ void display_matrix(double** matrix, int n) {
     }
 }
 
-/* Matric multiplication functions */
+/* Matrix multiplication functions */
 
-void matrix_product_1(double** A, double** B, double** C, long unsigned int n) {
-	size_t i, j, k;
-	double sum;
+void matrix2d_product_ijk(double** A, double** B, double** C, long unsigned int n) {
+    size_t i, j, k;
+    double sum;
     for (i = 0; i < n; ++i) {
         for (j = 0; j < n; ++j) {
-			sum = 0;
+            sum = 0;
             for (k = 0; k < n; ++k) {
                 sum += A[i][k] * B[k][j];
             }
-			C[i][j] = sum;
+            C[i][j] = sum;
         }
-        //printf("%d\n", i + 1);
     }
 }
 
-void matrix_product_2(double** A, double** B, double** C, long unsigned int n) {
-	size_t i, j, k;
-	double r;
+void matrix2d_product_ikj(double** A, double** B, double** C, long unsigned int n) {
+    size_t i, j, k;
+    double r;
     for (i = 0; i < n; ++i) {
         for (k = 0; k < n; ++k) {
-			r = A[i][k];
+            r = A[i][k];
             for (j = 0; j < n; ++j) {
                 C[i][j] += r * B[k][j];
             }
         }
-        //printf("%d\n", i + 1);
     }
 }
 
-void function_execution_time(double** A, double** B, double** C,
-                             long unsigned int n, const char* function_name,
-                             void (*matrix_product)(double**, double**, double**, long unsigned int)) {
+void matrix1d_product_ijk(double* A, double* B, double* C, long unsigned int n) {
+    size_t i, j, k;
+    double* ptC = C;
+    for (i = 0; i < n; ++i) {
+        for (j = 0; j < n; ++j, ++ptC) {
+            double* ptB = &B[0 * n + j];
+            double* ptA = &A[i * n + 0];
+            for (k = 0; k < n; ++k, ++ptA, ptB += n) {
+                *ptC += *ptA * *ptB;
+            }
+        }
+    }
+}
+
+void matrix1d_product_ikj(double* A, double* B, double* C, long unsigned int n) {
+    size_t i, j, k;
+    double* ptA = A;
+    for (i = 0; i < n; ++i) {
+        for (k = 0; k < n; ++k, ++ptA) {
+            double* ptB = &B[k * n + 0];
+            double* ptC = &C[i * n + 0];
+            for (j = 0; j < n; ++j, ++ptC, ++ptB) {
+                *ptC += *ptA * *ptB;
+            }
+        }
+    }
+}
+
+void matrix2d_functions_execution_time(double** A, double** B, double** C,
+                                       long unsigned int n, const char* function_name,
+                                       void (*matrix_product)(double**, double**, double**, long unsigned int)) {
     static clock_t start, end;
     static double cpu_time_used;
 
@@ -84,36 +144,88 @@ void function_execution_time(double** A, double** B, double** C,
     printf("%s took %f seconds to execute for an entry n = %ld\n", function_name, cpu_time_used, n);
 }
 
-void time_n(long unsigned int n) {
-    double** A = random_matrix(n);
-    double** B = random_matrix(n);
+void matrix1d_functions_execution_time(double* A, double* B, double* C,
+                                       long unsigned int n, const char* function_name,
+                                       void (*matrix_product)(double*, double*, double*, long unsigned int)) {
+    static clock_t start, end;
+    static double cpu_time_used;
 
-    double** C = init_matrix(n);
+    start = clock();
+    (*matrix_product)(A, B, C, n);
+    end = clock();
+    cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
 
-    const char* functions[2] = {"matrix_product_1()", "matrix_product_2()"};
+    printf("%s took %f seconds to execute for an entry n = %ld\n", function_name, cpu_time_used, n);
+}
 
-    function_execution_time(A, B, C, n, functions[0], matrix_product_1);
-    function_execution_time(A, B, C, n, functions[1], matrix_product_2);
+void time_n_2darray(long unsigned int n,
+                    double** (*allocate_matrix_function)(long unsigned int),
+                    void (*free_matrix_function)(double**, long unsigned int)) {
+    double** A = allocate_matrix_function(n);
+    double** B = allocate_matrix_function(n);
+    random_matrix2d(A, n);
+    random_matrix2d(B, n);
 
-	free_matrix(A, n);
-	free_matrix(B, n);
-	free_matrix(C, n);
+    double** C = allocate_matrix_function(n);
+    // double (*C)[n] = malloc(sizeof(double[n][n]));
+    // free(C);
+
+    const char* functions[2] = {"matrix2d_product_ijk()", "matrix2d_product_ikj()"};
+
+    matrix2d_functions_execution_time(A, B, C, n, functions[0], matrix2d_product_ijk);
+    matrix2d_functions_execution_time(A, B, C, n, functions[1], matrix2d_product_ikj);
+
+    free_matrix_function(A, n);
+    free_matrix_function(B, n);
+    free_matrix_function(C, n);
+}
+
+void time_n_1darray(long unsigned int n) {
+    double* A;  // the type is a pointer to an int (the bucket type)
+    double* B;
+    A = (double*)malloc(sizeof(double) * n * n);
+    B = (double*)malloc(sizeof(double) * n * n);
+    random_matrix1d(A, n);
+    random_matrix1d(B, n);
+
+    double* C;
+    C = (double*)malloc(sizeof(double) * n * n);
+
+    const char* functions[2] = {"matrix1d_product_ijk()", "matrix1d_product_ikj()"};
+
+    matrix1d_functions_execution_time(A, B, C, n, functions[0], matrix1d_product_ijk);
+    matrix1d_functions_execution_time(A, B, C, n, functions[1], matrix1d_product_ikj);
+
+    free(A);
+    free(B);
+    free(C);
 }
 
 void test(void) {
     for (size_t i = 100; i <= 800; i += 100) {
-        time_n(i);
+        time_n_2darray(i, allocate_matrix, free_matrix);
+        printf("\n");
+    }
+}
+
+void test_allocation(void) {
+    for (size_t i = 100; i <= 800; i += 100) {
+        time_n_2darray(i, allocate_matrix, free_matrix);
+        // time_n_2darray(i, allocate_matrix_continuous, free_matrix_continuous);
+        time_n_1darray(i);
         printf("\n");
     }
 }
 
 int main(void) {
-	// To gather from command line
-	// size_t n = (argc == 2 ) ? atoi(argv[1]) : 100;
-	
+    // To gather from command line
+    // size_t n = (argc == 2 ) ? atoi(argv[1]) : 100;
+
     srand((unsigned int)time(NULL));
 
-    test();
+    // test();
+
+    test_allocation();
 
     return EXIT_SUCCESS;
 }
