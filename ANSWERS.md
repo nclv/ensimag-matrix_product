@@ -85,7 +85,17 @@ On peut donner 65 ns comme temps moyen d'un défaut de cache.
 
 # Q3.
 
-$W_x(n) = $ 
+$$W_x(n) = n^3$$ 
+$$W_+(n) = n^3$$ 
+$n^2$ additions sur `ptC` et $n^3$ additions sur `ptA` et `ptB` pour le programme `(i, j, k)`.
+
+$n^2$ additions sur `ptA` et $n^3$ additions sur `ptB` et `ptB` pour le programme `(i, k, j)`.
+$$W_{ptr+}(n) = n^3$$ 
+$$W_{ptrx}(n) = 2n^2(n + 1)$$ 
+
+Les deux programmes effectuent un nombre analogue d'opérations.
+
+# Q4.
 
 
 
