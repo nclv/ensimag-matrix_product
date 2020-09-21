@@ -2,6 +2,8 @@
 
 Le programme `(i, j, k)` est le plus long à l'exécution.
 
+Voir le [graphe](matrix-product-gnuplot.png).
+
 # Q2.
 
 `valgrind-cachegrind` pour la boucle `(i, j, k)`.
@@ -158,6 +160,6 @@ _B_: on exploite la localité puisqu'il est accessible par ligne dans la boucle 
 
 Pour améliorer l'algorithme dans les conditions de la question précédente, on peut effectuer un produit par blocs.
 
-Il faut que la taille `B` du block vérifie `B^2 < Z`. On a alors `B^2/L` défaut de cache à la première itération pour chaque block. Soit `2*n/B*(B^2/L)` défauts de cache sans compter la matrice C. On a la même chose à chaque itération soit `(2*n*B/L)*(n/B)^2` défauts de cache.
+Il faut que la taille `B` du block vérifie `3B^2 < Z` car on veut faire tenir les 3 blocks des 3 matrices dans le cache. On a alors `B^2/L` défaut de cache à la première itération pour chaque block. Soit `2*n/B*(B^2/L)` défauts de cache sans compter la matrice C. On a la même chose à chaque itération soit `(2*n*B/L)*(n/B)^2` défauts de cache.
 
 On pourrait aussi aligner manuellement les arrays A, B et C.
