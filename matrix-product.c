@@ -104,7 +104,7 @@ void matrix2d_product_ikj(double** A, double** B, double** C, long unsigned int 
 
 void matrix1d_product_ijk(double* A, double* B, double* C, long unsigned int n) {
     size_t i, j, k;
-    double* ptC = C;
+    double* ptC = C; // the value of C is equivalent to &(C[0])
     for (i = 0; i < n; ++i) {
         for (j = 0; j < n; ++j, ++ptC) {
             double* ptB = &B[0 * n + j];

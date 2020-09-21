@@ -1,4 +1,4 @@
-## Links
+# Links
 
 See :
  - https://levelup.gitconnected.com/c-programming-hacks-4-matrix-multiplication-are-we-doing-it-right-21a9f1cbf53
@@ -7,7 +7,7 @@ See :
  - https://www.quora.com/How-can-we-use-cache-s-for-optimization-of-matrix-multiplication
  - https://akkadia.org/drepper/cpumemory.pdf (6.2.1)
 
-# Commands
+# Commands and explainations
 
 Use `getconf LEVEL1_DCACHE_LINESIZE` to get L1 cache size linesize.
 
@@ -27,8 +27,8 @@ The LL miss rates tells us there was some Last Level cache misses.
 
 # Some informations
 
-See [notes.md](NOTES.md).
+See [notes.md](NOTES.md)
 
-# Q1.
+# Answers
 
-Le programme `(i, j, k)` est le plus long à l'exécution.
+See [answers.md](ANSWERS.md)

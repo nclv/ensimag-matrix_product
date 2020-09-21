@@ -1,10 +1,8 @@
-```gcc -DLEVEL1_DCACHE_LINESIZE=`getconf LEVEL1_DCACHE_LINESIZE` ```
+You can compile with ```gcc -DLEVEL1_DCACHE_LINESIZE=`getconf LEVEL1_DCACHE_LINESIZE` ```.
 
-gain minimal pour `matrix_product_1()` : n = 800, 4.275619 -> 4.143644
+There is a minimal gain for `matrix_product_1()` : n = 800, 4.275619 -> 4.143644.
 
-On ne peut pas se fier au dernier résultat (dernière valeur de n). Il est trop variable.
-
-See [data locality for implementing 2d array](https://stackoverflow.com/questions/44030148/data-locality-for-implementing-2d-array-in-c-c) and [dynamic array allocation](https://www.cs.swarthmore.edu/~newhall/unixhelp/C_arrays.html#dynamic2D).
+See [data locality for implementing 2d array](https://stackoverflow.com/questions/44030148/data-locality-for-implementing-2d-array-in-c-c) and [dynamic array allocation](https://www.cs.swarthmore.edu/~newhall/unixhelp/C_arrays.html#dynamic2D) and [Memory layout of multi-dimensional arrays](https://eli.thegreenplace.net/2015/memory-layout-of-multi-dimensional-arrays#id6).
 
 ---
 
@@ -26,8 +24,6 @@ The speed is gained in loops, most of all. When you use an array, you would use 
 
 ---
 
-3
-
 Indexing an array is dirt cheap in ways where I've never found any kind of performance boost by directly using pointers instead. That includes some very performance-critical areas like looping through each pixel of an image containing millions of them -- still no measurable performance difference between indices and pointers (though it does make a difference if you can access an image using one sequential loop over two).
 
 I've actually found many opposite cases where turning pointers into 32-bit indices boosted performance after 64-bit hardware started becoming available when there was a need to store a boatload of them.
@@ -41,6 +37,10 @@ But on a deeper level, using indices allows a lot more options. You can use pure
 Consider an example: let's say you have an array that grows dynamically as you add elements to its back, an index into that array, and a pointer into that array. You add an element to the array, exhausting its capacity, so now it must grow. You call realloc, and get a new array (or an old array if there was enough extra memory after the "official" end). The pointer that you held is now invalid; the index, however, is still valid.)
 
 You get a lot more room to optimize with indices, and I'd consider it mostly just a waste of memory if you keep pointers around on top of indices. The downside to indices for me is mostly just convenience. We have to have access to the array we're indexing on top of the index itself, while the pointer allows you to access the element without having access to its container. It's often more difficult and error-prone to write code and data structures revolving around indices and also harder to debug since we can't see the value of an element through an index. That said, if you accept the extra burden, then often you get more room to optimize with indices, not less.
+
+---
+
+In general I recommend avoiding using pointer arithmetic to access array buckets: it is easy to make errors and very hard to debug when you do).
 
 ---
 
