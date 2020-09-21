@@ -1,0 +1,26 @@
+==198803== Cachegrind, a cache and branch-prediction profiler
+==198803== Copyright (C) 2002-2017, and GNU GPL'd, by Nicholas Nethercote et al.
+==198803== Using Valgrind-3.16.1 and LibVEX; rerun with -h for copyright info
+==198803== Command: ./matrix-product
+==198803== Parent PID: 6916
+==198803== 
+--198803-- warning: L3 cache found, using its data for the LL simulation.
+==198803== brk segment overflow in thread #1: can't grow to 0x483b000
+==198803== (see section Limitations in user manual)
+==198803== NOTE: further instances of this message will not be shown
+==198803== 
+==198803== I   refs:      7,135,382,486
+==198803== I1  misses:            1,254
+==198803== LLi misses:            1,249
+==198803== I1  miss rate:          0.00%
+==198803== LLi miss rate:          0.00%
+==198803== 
+==198803== D   refs:      3,063,569,074  (3,044,367,354 rd   + 19,201,720 wr)
+==198803== D1  misses:    1,253,011,068  (1,251,756,391 rd   +  1,254,677 wr)
+==198803== LLd misses:      125,759,735  (  125,380,280 rd   +    379,455 wr)
+==198803== D1  miss rate:          40.9% (         41.1%     +        6.5%  )
+==198803== LLd miss rate:           4.1% (          4.1%     +        2.0%  )
+==198803== 
+==198803== LL refs:       1,253,012,322  (1,251,757,645 rd   +  1,254,677 wr)
+==198803== LL misses:       125,760,984  (  125,381,529 rd   +    379,455 wr)
+==198803== LL miss rate:            1.2% (          1.2%     +        2.0%  )

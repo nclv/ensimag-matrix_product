@@ -172,7 +172,7 @@ void time_n_2darray(long unsigned int n,
 
     const char* functions[2] = {"matrix2d_product_ijk()", "matrix2d_product_ikj()"};
 
-    matrix2d_functions_execution_time(A, B, C, n, functions[0], matrix2d_product_ijk);
+    // matrix2d_functions_execution_time(A, B, C, n, functions[0], matrix2d_product_ijk);
     matrix2d_functions_execution_time(A, B, C, n, functions[1], matrix2d_product_ikj);
 
     free_matrix_function(A, n);
@@ -209,10 +209,10 @@ void test(void) {
 }
 
 void test_allocation(void) {
-    for (size_t i = 100; i <= 800; i += 100) {
+    for (size_t i = 1000; i <= 1000; i += 1000) {
         time_n_2darray(i, allocate_matrix, free_matrix);
         // time_n_2darray(i, allocate_matrix_continuous, free_matrix_continuous);
-        time_n_1darray(i);
+        // time_n_1darray(i);
         printf("\n");
     }
 }
