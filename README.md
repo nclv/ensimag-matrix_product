@@ -25,6 +25,15 @@ The D1 miss rates tells us there was a lot of cache L1 misses
 
 The LL miss rates tells us there was some Last Level cache misses.
 
+# Commands gnuplot
+
+apt-get install gnuplot
+gnuplot 5.2 the latest version
+
+`gnuplot` to start running the program
+gnuplot> plot "my-file" using 1:2 title "my-title" with lines, "my-file" using 1:3 title "my-title" with lines
+is drawing on screen a graph with 2 and 3 in function of 1
+
 # Some informations
 
 See [notes.md](NOTES.md)
