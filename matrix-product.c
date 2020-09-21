@@ -131,7 +131,7 @@ void matrix1d_product_ikj(double* A, double* B, double* C, long unsigned int n) 
 }
 
 void matrix2d_functions_execution_time(double** A, double** B, double** C,
-                                       long unsigned int n, const char* function_name,
+                                       long unsigned int n,
                                        void (*matrix_product)(double**, double**, double**, long unsigned int)) {
     static clock_t start, end;
     static double cpu_time_used;
@@ -141,11 +141,12 @@ void matrix2d_functions_execution_time(double** A, double** B, double** C,
     end = clock();
     cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
 
-    printf("%s took %f seconds to execute for an entry n = %ld\n", function_name, cpu_time_used, n);
+	printf("%lf ", cpu_time_used);
+    //printf("%s took %f seconds to execute for an entry n = %ld\n", function_name, cpu_time_used, n);
 }
 
 void matrix1d_functions_execution_time(double* A, double* B, double* C,
-                                       long unsigned int n, const char* function_name,
+                                       long unsigned int n,
                                        void (*matrix_product)(double*, double*, double*, long unsigned int)) {
     static clock_t start, end;
     static double cpu_time_used;
@@ -155,7 +156,8 @@ void matrix1d_functions_execution_time(double* A, double* B, double* C,
     end = clock();
     cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
 
-    printf("%s took %f seconds to execute for an entry n = %ld\n", function_name, cpu_time_used, n);
+	printf("%lf ", cpu_time_used);
+    //printf("%s took %f seconds to execute for an entry n = %ld\n", function_name, cpu_time_used, n);
 }
 
 void time_n_2darray(long unsigned int n,
@@ -170,10 +172,10 @@ void time_n_2darray(long unsigned int n,
     // double (*C)[n] = malloc(sizeof(double[n][n]));
     // free(C);
 
-    const char* functions[2] = {"matrix2d_product_ijk()", "matrix2d_product_ikj()"};
+    //const char* functions[2] = {"matrix2d_product_ijk()", "matrix2d_product_ikj()"};
 
-    // matrix2d_functions_execution_time(A, B, C, n, functions[0], matrix2d_product_ijk);
-    matrix2d_functions_execution_time(A, B, C, n, functions[1], matrix2d_product_ikj);
+    matrix2d_functions_execution_time(A, B, C, n, matrix2d_product_ijk);
+    matrix2d_functions_execution_time(A, B, C, n, matrix2d_product_ikj);
 
     free_matrix_function(A, n);
     free_matrix_function(B, n);
@@ -191,10 +193,10 @@ void time_n_1darray(long unsigned int n) {
     double* C;
     C = (double*)malloc(sizeof(double) * n * n);
 
-    const char* functions[2] = {"matrix1d_product_ijk()", "matrix1d_product_ikj()"};
+    //const char* functions[2] = {"matrix1d_product_ijk()", "matrix1d_product_ikj()"};
 
-    matrix1d_functions_execution_time(A, B, C, n, functions[0], matrix1d_product_ijk);
-    matrix1d_functions_execution_time(A, B, C, n, functions[1], matrix1d_product_ikj);
+    matrix1d_functions_execution_time(A, B, C, n, matrix1d_product_ijk);
+    matrix1d_functions_execution_time(A, B, C, n, matrix1d_product_ikj);
 
     free(A);
     free(B);
@@ -203,7 +205,8 @@ void time_n_1darray(long unsigned int n) {
 
 void test(void) {
     for (size_t i = 100; i <= 800; i += 100) {
-        time_n_2darray(i, allocate_matrix, free_matrix);
+        printf("%ld ", i);
+		time_n_2darray(i, allocate_matrix, free_matrix);
         printf("\n");
     }
 }
@@ -223,9 +226,9 @@ int main(void) {
 
     srand((unsigned int)time(NULL));
 
-    // test();
+    test();
 
-    test_allocation();
+    //test_allocation();
 
     return EXIT_SUCCESS;
 }
