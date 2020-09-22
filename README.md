@@ -29,7 +29,7 @@ The LL miss rates tells us there was some Last Level cache misses.
 
 **ijk**
 ```bash
-$sudo perf stat -e task-clock,cycles,instructions,cache-references,cache-misses ./matrix-product
+$sudo perf stat -e task-clock,cycles,instructions,cache-references,cache-misses,L1-dcache-loads,L1-dcache-load-misses ./matrix-product
 1000 12.058128 
 
  Performance counter stats for './matrix-product':
@@ -50,7 +50,7 @@ $sudo perf stat -e task-clock,cycles,instructions,cache-references,cache-misses 
 
 **ikj**
 ```bash
-$sudo perf stat -e task-clock,cycles,instructions,cache-references,cache-misses,,L1-dcache-loads,L1-dcache-load-misses ./matrix-product
+$sudo perf stat -e task-clock,cycles,instructions,cache-references,cache-misses,L1-dcache-loads,L1-dcache-load-misses ./matrix-product
 1000 1.006262 
 
  Performance counter stats for './matrix-product':
