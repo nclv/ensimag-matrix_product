@@ -234,11 +234,34 @@ Supposons que le cache est très petit, soit $Z << n$.
 
 # Q.7
 
-Pour améliorer l'algorithme dans les conditions de la question précédente, on peut effectuer un produit par blocs.
+Pour améliorer l'algorithme dans les conditions de la question précédente, on peut effectuer un produit par blocs de taille `B` par `B`, avec `B > L`.
 
-Il faut que la taille `B` du block vérifie `3B^2 < Z` car on veut faire tenir les 3 blocks des 3 matrices dans le cache. On a alors `B^2/L` défaut de cache à la première itération pour chaque block. Soit `2*n/B*(B^2/L)` défauts de cache sans compter la matrice C. On a la même chose à chaque itération soit `(2*n*B/L)*(n/B)^2` défauts de cache.
+Si la taille `B` du block vérifie `3B^2 < Z`, on peut conserver à tout instant un bloc de la matrice A, un bloc de la matrice B et un bloc de la matrice C dans le cache.
 
-On pourrait aussi aligner manuellement les arrays A, B et C.
+Multiplier deux blocs ne cause pas de défauts de cache en dehors de la lecture des blocs de A et B et de l’écriture du résultat dans C.
+Pour chaque bloc dans la matrice C, on doit lire `n/B` blocs dans la matrice A et dans la matrice B. La lecture d’un bloc cause `B^2/L` défauts de cache. On a donc au total:
+$$(n/B)^2(n/B * 2 * B^2/L + B^2/L) = O(n^3/(B*L))$$
+On veut `B` le plus grand possible sachant que `3B^2 < Z` . On prend donc `B = √Z/3`, ce qui donne $Q(N) = O(N^3/(B·√Z))$ défauts de cache.
+
+L’algorithme précédent a besoin de connaître la taille du cache Z. On peut atteindre la même borne sans utiliser cette valeur et obtenir ainsi un algorithme cache-oblivious. Pour cela on utilise l’algorithme de multiplication de matrices diviser pour régner. On décompose récursivement le produit en 8 produits de matrices $n/2$ par $n/2$. La complexité en nombre d’instructions est
+$$
+\begin{array}{ll}
+    W(1) = O(1) \\
+    W(n) = 8W(\frac{n}{2}) + O(n^2)
+\end{array}
+$$
+ce qui donne $W(n) = O(n^3)$. On calcule de la même manière le nombre de défauts de cache. L’addition des sous-produits accède aux données linéairement et cause $O(n^2/L)$ défauts de cache. De plus, lorsque $3n^2 < Z$, les 3 sous-matrices tiennent dans le cache donc les appels récursifs ne génèrent plus de défauts de cache. On a donc:
+$$
+\begin{array}{ll}
+    \frac{n^2}{L} & \text{si } 3n^2 < Z \\
+    8Q(\frac{n}{2}) + O(\frac{n^2}{L}) & \text{sinon.}
+\end{array}
+$$
+ce qui donne
+$$
+Q(n) = O(\frac{n^3}{L.\sqrt{Z}})
+$$
+Cet algorithme atteint asymptotiquement la même performance que l’algorithme précé-dent sans qu’il ne soit nécessaire de de connaître la taille du cache.
 
 Adrien:
 Pour améliorer le programme, on utilise une technique de blocking.
