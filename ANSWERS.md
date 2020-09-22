@@ -69,9 +69,9 @@ Le programme `(i, j, k)` fait `7,135,382,486` instructions et `1,253,011,068` d�
 
 ---
 
-Comment calculer le temps perdu (en nombre de cycles) par le processeur à cause de chaque défaut de cache ?
+Comment calculer le temps perdu par le processeur à cause de chaque défaut de cache (pas seulement LL1)?
 
-On utilise l'utilitaire `perf`.
+On a besoin de la fréquence de notre processeur et du nombre d'instructions par cycle. On obtient ces données avec l'utilitaire `perf`.
 
 **ijk**
 ```bash
@@ -115,31 +115,47 @@ $sudo perf stat -e task-clock,cycles,instructions,cache-references,cache-misses,
        0,016032000 seconds sys
 ```
 
-NOP
-Le programme `(i, j, k)` utilise `27 655 923 827` cycles tandis que le programme `(i, k, j)` en utilise `2 464 033 043`. Donc la différence de défauts de cache compte pour `25 191 890 784` cycles.
+> The cache-misses event represents the number of memory access that could not be served by any of the cache. 
 
-On a par ailleurs une différence de `127 941 970 - 20 188 624 = 107 753 346` cache-misses (this event represents the number of memory access that could not be served by any of the cache).
+> The ratio of cache-misses to instructions will give an indication how well the cache is working; the lower the ratio the better.
 
-On a donc `25 191 890 784 / 107 753 346 ~= 234` cycles par défaut de cache. Pour mon processeur à `2.3 GHz`, cela donne `540 ns` par défaut de cache.
+> The higher IPC (Instruction per clock cycle) the more efficiently the processor is executing instruction on the system. The IPC will be affected by delay due to cache misses.
 
-YEP
-`(1/0.26 - 1/1.68)/(79,658 - 28,831) ~= 64ms`.
+Par ailleurs, on sait que
+$$
+CPI = CPI_{\text{ideal cache}} + (\text{cache-misses rate}) * (\text{coût d'un défaut de cache})
+$$
+
+$CPI$ est le nombre de cycles par instructions. `perf` nous donne le nombre d'instructions par cycles.
+
+$CPI_{\text{ideal cache}}$ représente les performances du cache en l'absence de défauts.
+
+Le coût d'un défaut d'un cache est exprimé en cycles perdus par défaut de cache. On le suppose identique entre nos deux simulations.
+
+On a donc
+$$
+\begin{aligned}
+    (\text{coût d'un défaut de cache}) &= \frac{CPI_{ijk} - CPI_{ikj}}{(\text{ijk cache-misses rate}) - (\text{ikj cache-misses rate})} \\
+    &= \frac{(\frac{1}{0.26} - \frac{1}{1.68})}{(0.79658 - 0.28831)} \\
+    &~= 6.4 \text{ cycles}
+\end{aligned}
+$$
+
+Ce qui multiplié à la fréquence du processeur donne environ **$15$ ns** comme temps moyen d'un défaut de cache.
+
+---
+
+Voici les temps d'exécution des deux programmes sans `valgrind`:
 
 ```bash
 $./matrix-product 
 matrix2d_product_ijk() took 8.568009 seconds to execute for an entry n = 1000
 ```
 
-Soit 68.4 ns par défaut de cache.
-
 ```bash
 $./matrix-product 
 matrix2d_product_ikj() took 0.785889 seconds to execute for an entry n = 1000
 ```
-
-Soit 62.4 ns par défaut de cache.
-
-On peut donner 65 ns comme temps moyen d'un défaut de cache.
 
 # Q3.
 
