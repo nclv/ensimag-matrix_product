@@ -196,6 +196,13 @@ _C_: pour `i` et `k` fixés, lorsque `j` varie, on accède à la ligne i, occupa
 
 On a `3*n*n/L` défauts de cache.
 
+Adrien: 
+Supposons que le cache est très grand pour contenir les trois matrices $A$, $B$ et $C$, soit $Z > 3n^2$.
+\begin{enumerate}
+	\item Algorithme $(i, j, k)$ : comme le cache est très grand, toutes les matrices tiennent en cache, donc $\lceil \frac{n^2}{L} \rceil + \{0, 1\} + O(1)$ défauts de cache par matrice, soit au total $Q(n, L, Z) = O(\frac{3n^2}{L})$.
+	\item Algorithme $(i, k, j)$ : le raisonnement est identique au précédent, car ici encore, toutes les matrices tiennent en cache, soit au total $Q(n, L, Z) = O(\frac{3n^2}{L})$.
+\end{enumerate}
+
 # Q.6
 
 Le cache est très petit, donc `Z << n`.
@@ -213,6 +220,14 @@ On a `n*n*n/L + 2*n*n/L` défauts de cache.
 
 _B_: on exploite la localité puisqu'il est accessible par ligne dans la boucle la plus interne. Mais une réutilisation temporaire n'est pas possible, car la capacité est insuffisante pour contenir tout B jusqu'à ce que la boucle extérieure `i` change. Ainsi, il y aura `n*n*n/L` défauts de cache pour les caches à mappage direct et les caches complètement associatifs.
 
+
+Adrien: 
+Supposons que le cache est très petit, soit $Z << n$.
+\begin{enumerate}
+	\item Algorithme $(i, j, k)$ : comme le cache est petit, une colonne ne tient pas en cache. Avec $i$ et $j$ fixés, on effectue $\lceil \frac{n}{L} \rceil + \{0, 1\} + O(1)$ défauts de cache sur $C$ et $A$ (car les matrices sont exploitées dans le sens du stockage). Pour $B$, il y a $n$ défauts de cache. Soit au total, $Q(n, L, Z) = n^2(\frac{2n}{L} + n) = O(n^3)$.
+	\item Algorithme $(i, k, j)$ : comme le cache est petit, une colonne ne tient pas en cache. Or, comme chaque matrice tient en cache alors on a $\lceil \frac{n}{L} \rceil + \{0, 1\} + O(1)$ défauts de cache pour chaque matrice, soit $Q(n, L, Z) = O(\frac{3n^2}{L})$.
+\end{enumerate}
+
 # Q.7
 
 Pour améliorer l'algorithme dans les conditions de la question précédente, on peut effectuer un produit par blocs.
@@ -220,3 +235,18 @@ Pour améliorer l'algorithme dans les conditions de la question précédente, on
 Il faut que la taille `B` du block vérifie `3B^2 < Z` car on veut faire tenir les 3 blocks des 3 matrices dans le cache. On a alors `B^2/L` défaut de cache à la première itération pour chaque block. Soit `2*n/B*(B^2/L)` défauts de cache sans compter la matrice C. On a la même chose à chaque itération soit `(2*n*B/L)*(n/B)^2` défauts de cache.
 
 On pourrait aussi aligner manuellement les arrays A, B et C.
+
+Adrien:
+Pour améliorer le programme, on utilise une technique de blocking.
+\begin{enumerate}
+	\item Blocking cache-aware : soit des blocs de taille $K \times K$. Comme on a trois matrices, supposons que $3K^2 \simeq Z$, soit $K \simeq \sqrt{\frac{Z}{3}}$. Nous disposons de trois boucles par pas de $K$ permettant de parcourir chaque bloc. Comme tous les blocs tiennent en cache, on a au total $\frac{3B^2}{L}$ défauts de cache pour les blocs. Comme il y a $\frac{n^3}{B^3}$ blocs, alors le total de nombre de défauts de cache est $Q(n, L, Z) = \theta(\frac{n^3}{L\sqrt{Z}})$.
+	\item Blocking cache-oblivious : on utilise une découpe récursive des blocs en 4 jusqu'à un seuil $S$ (seuil à partir duquel les blocs tiennent en cache). Donc $$
+\sigma Q(n, L, Z) = \left\{
+    \begin{array}{ll}
+        \frac{3n^2}{L} & \mbox{si } 3n^2 < Z \\
+        8Q(\frac{n}{2}) + O(\frac{n^2}{L}) & \mbox{sinon.}
+    \end{array}
+\right.
+$$
+soit après utilisation du Master Theorem, $Q(n, L, Z) = \theta(\frac{n^3}{L\sqrt{Z}})$.
+\end{enumerate}
