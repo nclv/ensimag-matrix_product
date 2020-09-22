@@ -115,11 +115,15 @@ $sudo perf stat -e task-clock,cycles,instructions,cache-references,cache-misses,
        0,016032000 seconds sys
 ```
 
+NOP
 Le programme `(i, j, k)` utilise `27 655 923 827` cycles tandis que le programme `(i, k, j)` en utilise `2 464 033 043`. Donc la différence de défauts de cache compte pour `25 191 890 784` cycles.
 
 On a par ailleurs une différence de `127 941 970 - 20 188 624 = 107 753 346` cache-misses (this event represents the number of memory access that could not be served by any of the cache).
 
 On a donc `25 191 890 784 / 107 753 346 ~= 234` cycles par défaut de cache. Pour mon processeur à `2.3 GHz`, cela donne `540 ns` par défaut de cache.
+
+YEP
+`(1/0.26 - 1/1.68)/(79,658 - 28,831) ~= 64ms`.
 
 ```bash
 $./matrix-product 
