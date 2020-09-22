@@ -157,7 +157,7 @@ Les deux programmes effectuent un nombre analogue d'opérations.
 
 Si le **compilateur sait** (il le sait généralement) que le foncteur M(i, j) est implémenté par M(i ∗ n + j) où la valeur de n est un attribut de M qui n’est pas modifié par l’appel M(i, j).
 
-Dans les 2 programmes, il n'est **(pas) utile** d’éliminer les multiplications pour l’accès aux coefficients des 3 matrices.
+Dans les 2 programmes, il n'est **pas (peu) utile** d’éliminer les multiplications pour l’accès aux coefficients des 3 matrices.
 
 ---
 
@@ -181,11 +181,11 @@ On considère un cache LL1 supposé vide de taille 32Kbits avec des lignes de 64
 
 _A_: A est indexé comme `A[i][k]`, pour `n` itérations de `k`, pour `i` et `j` fixés à 0, la séquence d'accès est `A[0][0], A[0][1], A[0][2], ... A[0][n-1]`. Étant donné que des éléments de mémoire contigus sont accédés, il y aura un échec tous les `L` accès, soit `n/L` défauts de cache. Lorsque `j` varie, la même ligne sera accédée de manière répétée dans le cache, ce qui se traduira par des hits (`j` n'apparaît pas dans l'indexation de A). Comme la capacité du cache est suffisamment importante pour contenir `n` éléments, aucun défaut de cache supplémentaire ne se produit pour `j` allant de 1 à `n-1`.  Le coût total de l'exécution de toutes les itérations de `j` est juste une fois le coût déjà déterminé pour l'exécution de toutes les itérations de la boucle la plus interne. Les mêmes coûts se répètent pour chaque itération `i`, lorsque différentes lignes de A sont accédées. En effet, comme on fait varier la boucle la plus extérieure (`i`), pour chaque valeur distincte de `i`, on accède à différentes lignes de A, et on a une répétition du nombre d'échecs correspondant à `i=0`. Le nombre total de défauts de cache est donc de `n*n/L` pour les caches à mappage direct et les caches complètement associatifs. 
 
-_B_: pour `i` et `j` fixés, lorsque `k` varie, on accède aux éléments d'une colonne de B.  Lorsque `j` est incrémenté, la colonne adjacente de B est chargée, mais il y aura des défauts de cache pour un cache à mappage direct (et des hits pour un cache entièrement associatif puisque seules les lignes `n/L` seront utilisées). Cependant, aucune réutilisation n'est possible dans la boucle `i`. Ainsi, les erreurs pour un cache direct seront `n*n*n`, et `n*(n/L)` pour un cache entièrement associatif.
+_B_: pour `i` et `j` fixés, lorsque `k` varie, on accède aux éléments d'une colonne de B.  Lorsque `j` est incrémenté, la colonne adjacente de B est chargée, mais il y aura des défauts de cache pour un cache à mappage direct (et des hits pour un cache entièrement associatif puisque seules les lignes `n/L` seront utilisées). Une réutilisation est possible dans la boucle `i` car le cache est supposé très grand. Ainsi, les erreurs pour un cache direct seront `n*n`, et `(n/L)` pour un cache entièrement associatif.
 
 _C_: similaire à la matrice A, il y aura une réutilisation des coefficients à la fois temporelle et spatiale. Le nombre total de défauts de cache sera donc `n*n/L`.
 
-On a `n*n*n + 2*n*n/L` défauts de cache.
+On a `3*n*n/L` défauts de cache.
 
 **Le programme `(i, k, j)`**
 _A_: La matrice A prends la place de la matrice C dans le programme `(i, j, k)`. Le nombre total de défauts de cache est `n*n/L`.
@@ -196,21 +196,25 @@ _C_: pour `i` et `k` fixés, lorsque `j` varie, on accède à la ligne i, occupa
 
 On a `3*n*n/L` défauts de cache.
 
-Adrien: 
+Adrien:
 Supposons que le cache est très grand pour contenir les trois matrices $A$, $B$ et $C$, soit $Z > 3n^2$.
+$$
 \begin{enumerate}
 	\item Algorithme $(i, j, k)$ : comme le cache est très grand, toutes les matrices tiennent en cache, donc $\lceil \frac{n^2}{L} \rceil + \{0, 1\} + O(1)$ défauts de cache par matrice, soit au total $Q(n, L, Z) = O(\frac{3n^2}{L})$.
 	\item Algorithme $(i, k, j)$ : le raisonnement est identique au précédent, car ici encore, toutes les matrices tiennent en cache, soit au total $Q(n, L, Z) = O(\frac{3n^2}{L})$.
 \end{enumerate}
+$$
 
 # Q.6
 
-Le cache est très petit, donc `Z << n`.
+Le cache est très petit, donc `Z << n`. On suppose qu'une ligne de nos matrices ne tient pas dans le cache.
 
 **Le programme `(i, j, k)`**
 
-A la première itération, on a `n/L + n` défauts de cache. Pareil pour la seconde etc...
-On a donc `n*n*n + 2*n*n/L` défauts de cache.
+Lors du calcul du premier coefficient, on a `n/L + n` défauts de cache. La localité spatiale est bonne pour les accès à la matrice A mais mauvaise pour les accès à la matrice B. En effet, chaque lecture d’un coefficient de B charge une ligne de cache entière contenant plusieurs coefficients mais un seul est utilisé. On doit charger dans le cache la ligne `A[i,:]` ce qui cause `n/L` défauts de cache et la colonne `B[:,j]` ce qui cause `n` défauts de cache.
+On a le même nombre de défauts de cache pour le calcul du second coefficient etc... On a donc `n*n*(n/L + n)` défauts de cache sur les matrices A et B.
+
+Si une ligne ou une colonne est plus grande que la taille du cache, on ne peut réutiliser les données entre les calculs des éléments de la matrice C. Les accès à la matrice C sont linéaires, ils causent `n*n/L` défauts de cache.
 
 _B_: pour `i` et `j` fixés, lorsque `k` varie, on accède aux éléments d'une colonne de B.  Lorsque `j` est incrémenté, la colonne adjacente de B est chargée, mais il y aura des défauts de cache pour un cache à mappage direct (et des hits pour un cache entièrement associatif puisque seules les lignes `n/L` seront utilisées). Cependant, aucune réutilisation n'est possible dans la boucle `i`. Ainsi, les erreurs pour un cache direct seront `n*n*n`, et `n*(n/L)*n` pour un cache entièrement associatif.
 
