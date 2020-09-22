@@ -69,6 +69,14 @@ Le programme `(i, j, k)` fait `7,135,382,486` instructions et `1,253,011,068` d�
 
 ---
 
+Comment calculer le temps perdu (en nombre de cycles) par le processeur à cause de chaque défaut de cache ?
+
+Le programme `(i, j, k)` utilise `27 655 923 827` cycles tandis que le programme `(i, k, j)` en utilise `2 464 033 043`. Donc les défauts de cache comptent pour `25 191 890 784` cycles.
+
+On a par ailleurs une différence de `127 941 970 - 20 188 624 = 107 753 346` cache-misses (this event represents the number of memory access that could not be served by any of the cache).
+
+On a donc `25 191 890 784 / 107 753 346 ~= 234` cycles par défaut de cache. Pour mon processeur à `2.3 GHz`, cela donne `540 ns` par défaut de cache.
+
 ```bash
 $./matrix-product 
 matrix2d_product_ijk() took 8.568009 seconds to execute for an entry n = 1000
