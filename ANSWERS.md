@@ -151,7 +151,8 @@ On a donc `n*n*n + 2*n*n/L` défauts de cache.
 
 _B_: pour `i` et `j` fixés, lorsque `k` varie, on accède aux éléments d'une colonne de B.  Lorsque `j` est incrémenté, la colonne adjacente de B est chargée, mais il y aura des défauts de cache pour un cache à mappage direct (et des hits pour un cache entièrement associatif puisque seules les lignes `n/L` seront utilisées). Cependant, aucune réutilisation n'est possible dans la boucle `i`. Ainsi, les erreurs pour un cache direct seront `n*n*n`, et `n*(n/L)*n` pour un cache entièrement associatif.
 
-**Le programme `(i, k, j`**
+**Le programme `(i, k, j`)**
+
 On a `n*n*n/L + 2*n*n/L` défauts de cache.
 
 _B_: on exploite la localité puisqu'il est accessible par ligne dans la boucle la plus interne. Mais une réutilisation temporaire n'est pas possible, car la capacité est insuffisante pour contenir tout B jusqu'à ce que la boucle extérieure `i` change. Ainsi, il y aura `n*n*n/L` défauts de cache pour les caches à mappage direct et les caches complètement associatifs.
