@@ -1,13 +1,30 @@
-# Q1.
+---
+title: "Analyse expérimentale du coût et des défauts de localité: application au produit matriciel"
+author: [Nicolas Vincent, Adrien Argento]
+date: "2020-09-23"
+keywords: [matrix product, cache-misses, locality]
+lang: "fr"
+
+titlepage: true
+titlepage-rule-height: 0
+code-block-font-size: \scriptsize
+caption-justification: centering
+disable-header-and-footer: true
+listings-no-page-break: true
+listings-disable-line-numbers: true
+...
+
+# Q1. Mesures de temps
 
 Le programme `(i, j, k)` est le plus long à l'exécution.
 
-Voir le [graphe](matrix-product-gnuplot.png).
+![Temps d'exécution pour n allant de 100 à 1000 par pas de 100.](matrix-product-gnuplot.png)
 
-# Q2.
+\newpage
+
+# Q2. Mesures de défauts de cache
 
 `valgrind-cachegrind` pour la boucle `(i, j, k)`.
-
 
 ```
 $valgrind --tool=cachegrind --log-file=valgrind-cachegrindijk-1000.txt ./matrix-product
@@ -33,6 +50,8 @@ matrix2d_product_ijk() took 86.578572 seconds to execute for an entry n = 1000
 ==198803== LL refs:       1,253,012,322  (1,251,757,645 rd   +  1,254,677 wr)
 ==198803== LL misses:       125,760,984  (  125,381,529 rd   +    379,455 wr)
 ==198803== LL miss rate:            1.2% (          1.2%     +        2.0%  )
+
+
 ```
 
 `valgrind-cachegrind` pour la boucle `(i, k, j)`.
@@ -61,19 +80,21 @@ matrix2d_product_ikj() took 26.232037 seconds to execute for an entry n = 1000
 ==199022== LL refs:         125,900,787  (  125,646,107 rd   +     254,680 wr)
 ==199022== LL misses:       125,897,289  (  125,643,088 rd   +     254,201 wr)
 ==199022== LL miss rate:            2.0% (          2.2%     +         0.0%  )
+
+
 ```
 
 Le programme `(i, k, j)` fait `4,130,887,438` instructions et `125,899,531` défauts de cache `L1`.
 
 Le programme `(i, j, k)` fait `7,135,382,486` instructions et `1,253,011,068` défauts de cache `L1`. C'est 10 fois plus de défauts de cache !!
 
----
+\newpage
 
-Comment calculer le temps perdu par le processeur à cause de chaque défaut de cache (pas seulement LL1)?
+**Comment calculer le temps perdu par le processeur à cause de chaque défaut de cache (pas seulement ceux du cache LL1) ?**
 
 On a besoin de la fréquence de notre processeur et du nombre d'instructions par cycle. On obtient ces données avec l'utilitaire `perf`.
 
-**ijk**
+Pour le programme `(i, j, k)`:
 ```bash
 $sudo perf stat -e task-clock,cycles,instructions,cache-references,cache-misses,L1-dcache-loads,L1-dcache-load-misses ./matrix-product
 1000 12.058128 
@@ -94,7 +115,7 @@ $sudo perf stat -e task-clock,cycles,instructions,cache-references,cache-misses,
        0,027999000 seconds sys
 ```
 
-**ikj**
+Pour le programme `(i, k, j)`:
 ```bash
 $sudo perf stat -e task-clock,cycles,instructions,cache-references,cache-misses,L1-dcache-loads,L1-dcache-load-misses ./matrix-product
 1000 1.006262 
@@ -151,13 +172,14 @@ Voici les temps d'exécution des deux programmes sans `valgrind`:
 $./matrix-product 
 matrix2d_product_ijk() took 8.568009 seconds to execute for an entry n = 1000
 ```
-
 ```bash
 $./matrix-product 
 matrix2d_product_ikj() took 0.785889 seconds to execute for an entry n = 1000
 ```
 
-# Q3.
+\newpage
+
+# Q3. Analyse du travail en nombre d’opérations
 
 $$W_x(n) = n^3$$ 
 $$W_+(n) = n^3$$ 
@@ -167,11 +189,13 @@ $n^2$ additions sur `ptA` et $n^3$ additions sur `ptB` et `ptB` pour le programm
 $$W_{ptr+}(n) = n^3$$ 
 $$W_{ptrx}(n) = 2n^2(n + 1)$$ 
 
-Les deux programmes effectuent un nombre analogue d'opérations.
+Les deux programmes effectuent un nombre analogue d'opérations: $O(n^3)$.
 
-# Q4.
+\newpage
 
-Si le **compilateur sait** (il le sait généralement) que le foncteur M(i, j) est implémenté par M(i ∗ n + j) où la valeur de n est un attribut de M qui n’est pas modifié par l’appel M(i, j).
+# Q4. Analyse de l’impact des itérateurs
+
+Si le **compilateur sait** (il le sait généralement) que le foncteur `M(i, j)` est implémenté par `M(i * n + j)` où la valeur de n est un attribut de M qui n’est pas modifié par l’appel `M(i, j)`.
 
 Dans les 2 programmes, il n'est **pas (peu) utile** d’éliminer les multiplications pour l’accès aux coefficients des 3 matrices.
 
@@ -181,7 +205,7 @@ Dans de nombreux cas, le simple fait d'utiliser un indexage nécessite d'ajouter
 
 Afin de transformer `M(i, j)` pour utiliser des pointeurs, le compilateur doit analyser toute la boucle et déterminer que, par exemple, chaque élément est accédé. Ce processus combine des optimisations appelées _Recherche de sous-expressions communes_ et _induction variable strength reduction_.
 
-Lors de l'écriture avec des pointeurs, l'ensemble du processus d'optimisation n'est pas nécessaire car le programmeur se contente généralement de parcourir le tableau. Comme les tableaux doivent généralement être **contigus**, un autre avantage des pointeurs est la création de structures allouées de manière incrémentielle. En `C`, on a de nombreux choix d'allocation mémoire pour représenter une matrice. Une déclaration statique assure que la localité des données est respectée. Cette propriété n'est généralement pas assurée par l'allocation dynamique d'un tableau 2d mais est possible (impossible en C++). Utiliser un tableau 1d pour représenter une matrice assure la localité des données et les avantages qui y sont associés en termes d'accès au cache/mémoire mais impose un accès par `M[i ∗ n + j]`.
+Lors de l'écriture avec des pointeurs, l'ensemble du processus d'optimisation n'est pas nécessaire car le programmeur se contente généralement de parcourir le tableau. Comme les tableaux doivent généralement être **contigus**, un autre avantage des pointeurs est la création de structures allouées de manière incrémentielle. En C, on a de nombreux choix d'allocation mémoire pour représenter une matrice. Une déclaration statique assure que la localité des données est respectée. Cette propriété n'est généralement pas assurée par l'allocation dynamique d'un tableau 2d mais est possible (impossible en C++). Utiliser un tableau 1d pour représenter une matrice assure la localité des données et les avantages qui y sont associés en termes d'accès au cache/mémoire mais impose un accès par `M[i * n + j]`.
 
 ---
 
@@ -189,19 +213,21 @@ Il est important de noter que les index sont plus robustes, car ils survivent so
 
 L'inconvénient des indices est surtout la commodité. Nous devons avoir accès au tableau que nous indexons en plus de l'index lui-même, alors que le pointeur vous permet d'accéder à l'élément sans avoir accès à son conteneur.
 
-# Q.5
+\newpage
+
+# Q.5 Un cache très grand
 
 Supposons que le cache est très grand pour contenir les trois matrices $A$, $B$ et $C$, soit $Z > 3n^2$.
 
 **Le programme `(i, j, k)`**
 
-Matrice _A_: A est indexé comme `A[i][k]`, pour $n$ itérations de `k`, pour `i` et `j` fixés à 0, la séquence d'accès est `A[0][0], A[0][1], A[0][2], ... A[0][n-1]`. Étant donné que des éléments de mémoire contigus sont accédés, il y aura un échec tous les $L$ accès, soit $\frac{n}{L}$ défauts de cache. Lorsque `j` varie, la même ligne sera accédée de manière répétée dans le cache, ce qui se traduira par des hits (`j` n'apparaît pas dans l'indexation de A). Comme la capacité du cache est suffisamment importante pour contenir $n$ éléments, aucun défaut de cache supplémentaire ne se produit pour `j` allant de $1$ à $n-1$.  Le coût total de l'exécution de toutes les itérations de `j` est juste une fois le coût déjà déterminé pour l'exécution de toutes les itérations de la boucle la plus interne. Les mêmes coûts se répètent pour chaque itération `i`, lorsque différentes lignes de A sont accédées. En effet, comme on fait varier la boucle la plus extérieure (`i`), pour chaque valeur distincte de `i`, on accède à différentes lignes de A, et on a une répétition du nombre d'échecs correspondant à `i=0`. Le nombre total de défauts de cache est donc en $O(\frac{n^2}{L})$ pour les caches à mappage direct et les caches complètement associatifs. 
+A est indexé comme `A[i][k]`, pour $n$ itérations de `k`, pour `i` et `j` fixés à 0, la séquence d'accès est `A[0][0], A[0][1], A[0][2], ... A[0][n-1]`. Étant donné que des éléments de mémoire contigus sont accédés, il y aura un échec tous les $L$ accès, soit $\frac{n}{L}$ défauts de cache. Lorsque `j` varie, la même ligne sera accédée de manière répétée dans le cache, ce qui se traduira par des hits (`j` n'apparaît pas dans l'indexation de A). Comme la capacité du cache est suffisamment importante pour contenir $n$ éléments, aucun défaut de cache supplémentaire ne se produit pour `j` allant de $1$ à $n-1$.  Le coût total de l'exécution de toutes les itérations de `j` est juste une fois le coût déjà déterminé pour l'exécution de toutes les itérations de la boucle la plus interne. Les mêmes coûts se répètent pour chaque itération `i`, lorsque différentes lignes de A sont accédées. En effet, comme on fait varier la boucle la plus extérieure (`i`), pour chaque valeur distincte de `i`, on accède à différentes lignes de A, et on a une répétition du nombre d'échecs correspondant à `i=0`. Le nombre total de défauts de cache est donc en $O(\frac{n^2}{L})$ pour les caches à mappage direct et les caches complètement associatifs. 
 
-Matrice _B_: pour `i` et `j` fixés, lorsque `k` varie, on accède aux éléments d'une colonne de B. Lorsque `j` est incrémenté, la colonne adjacente de B est chargée, mais il y aura des défauts de cache pour un cache à mappage direct (et des hits pour un cache entièrement associatif puisque seules les lignes $\frac{n}{L}$ seront utilisées). Une réutilisation est possible dans la boucle `i` car le cache est supposé très grand. Ainsi, les erreurs pour un cache direct seront en $O(n^2)$.
+Pour `i` et `j` fixés, lorsque `k` varie, on accède aux éléments d'une colonne de B. Lorsque `j` est incrémenté, la colonne adjacente de B est chargée, mais il y aura des défauts de cache pour un cache à mappage direct (et des hits pour un cache entièrement associatif puisque seules les lignes $\frac{n}{L}$ seront utilisées). Une réutilisation est possible dans la boucle `i` car le cache est supposé très grand. Ainsi, les erreurs pour un cache direct seront en $O(n^2)$.
 
-Matrice _C_: similaire à la matrice A, il y aura une réutilisation des coefficients à la fois temporelle et spatiale. Le nombre total de défauts de cache sera donc en $O(\frac{n^2}{L})$.
+Similaire à la matrice A, il y aura une réutilisation des coefficients à la fois temporelle et spatiale pour la matrice C. Le nombre total de défauts de cache sera donc en $O(\frac{n^2}{L})$.
 
-Finalement, on a $O(\frac{n^2}{L})$ défauts de cache.
+Finalement, on a $O(n^2 + \frac{n^2}{L})$ défauts de cache.
 
 ---
 
@@ -221,15 +247,17 @@ $$
 $$
 
 **Le programme `(i, k, j)`**
-Matrice _A_: La matrice A prends la place de la matrice C dans le programme `(i, j, k)`. Le nombre total de défauts de cache est en $O(\frac{n^2}{L})$.
+La matrice A prends la place de la matrice C dans le programme `(i, j, k)`. Le nombre total de défauts de cache est en $O(\frac{n^2}{L})$.
 
-Matrice _B_: on exploite la localité puisqu'il est accessible par ligne dans la boucle la plus interne. Une réutilisation temporelle est possible, car la capacité est suffisante pour contenir tout B jusqu'à ce que la boucle extérieure `i` change. Ainsi, il y aura $O(\frac{n^2}{L})$ défauts de cache pour les caches à mappage direct et les caches complètement associatifs.
+On exploite la localité puisque la matrice B est accessible par ligne dans la boucle la plus interne. Une réutilisation temporelle est possible, car la capacité est suffisante pour contenir tout B jusqu'à ce que la boucle extérieure `i` change. Ainsi, il y aura $O(\frac{n^2}{L})$ défauts de cache pour les caches à mappage direct et les caches complètement associatifs.
 
-Matrice _C_: pour `i` et `k` fixés, lorsque `j` varie, on accède à la ligne `i`, occupant $frac{n}{L}$ lignes adjacentes dans le cache. Lorsque `k` varie, la même ligne sera accédée de façon répétée dans le cache. Ainsi, on avec un cache à mappage direct ou entièrement associatif $O(\frac{n^2}{L})$ défauts de cache.
+Pour `i` et `k` fixés, lorsque `j` varie, on accède à la ligne `i` de la matrice C, occupant $frac{n}{L}$ lignes adjacentes dans le cache. Lorsque `k` varie, la même ligne sera accédée de façon répétée dans le cache. Ainsi, on avec un cache à mappage direct ou entièrement associatif $O(\frac{n^2}{L})$ défauts de cache.
 
 Finalement, on a aussi $O(\frac{n^2}{L})$ défauts de cache.
 
-# Q.6
+\newpage
+
+# Q.6 Un cache très petit
 
 Le cache est très petit, soit `Z << n`. On suppose qu'une ligne de nos matrices ne tient pas dans le cache.
 
@@ -246,9 +274,11 @@ Ainsi $Q(n, Z, L) = O(n^3 + \frac{n^3}{L})$.
 
 On a $Q(n, Z, L) = O(\frac{n^3}{L} + \frac{n^2}{L})$.
 
-_B_: on exploite la localité puisqu'il est accessible par ligne dans la boucle la plus interne. Mais une réutilisation temporaire n'est pas possible, car la capacité est insuffisante pour contenir tout B jusqu'à ce que la boucle extérieure `i` change. Ainsi, il y aura $O(\frac{n^3}{L})$ défauts de cache pour les caches à mappage direct et les caches complètement associatifs.
+On exploite la localité puisque la matrice B est accessible par ligne dans la boucle la plus interne. Mais une réutilisation temporaire n'est pas possible, car la capacité est insuffisante pour contenir tout B jusqu'à ce que la boucle extérieure `i` change. Ainsi, il y aura $O(\frac{n^3}{L})$ défauts de cache pour les caches à mappage direct et les caches complètement associatifs.
 
-# Q.7
+\newpage
+
+# Q.7 Un produit par blocs
 
 Pour améliorer l'algorithme dans les conditions de la question précédente, on peut effectuer un produit par blocs de taille $B$ par $B$, avec $B > L$.
 
