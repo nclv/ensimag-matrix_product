@@ -90,4 +90,6 @@ See [notes.md](NOTES.md)
 
 # Answers
 
-See [answers.md](ANSWERS.md)
+See [answers.md](ANSWERS.md) or [answers.pdf](ANSWERS.pdf).
+
+`pandoc ANSWERS.md -o ANSWERS.pdf --from markdown --template ~/.local/share/pandoc/templates/eisvogel.tex --listings --pdf-engine=xelatex`
