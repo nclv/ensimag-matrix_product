@@ -1,5 +1,6 @@
 ---
-title: "Analyse expérimentale du coût et des défauts de localité: application au produit matriciel"
+title: "Analyse expérimentale du coût et des défauts de localité"
+subtitle: "Application au produit matriciel"
 author: [Nicolas Vincent, Adrien Argento]
 date: "2020-09-23"
 keywords: [matrix product, cache-misses, locality]
@@ -223,11 +224,11 @@ Supposons que le cache est très grand pour contenir les trois matrices $A$, $B$
 
 A est indexé comme `A[i][k]`, pour $n$ itérations de `k`, pour `i` et `j` fixés à 0, la séquence d'accès est `A[0][0], A[0][1], A[0][2], ... A[0][n-1]`. Étant donné que des éléments de mémoire contigus sont accédés, il y aura un échec tous les $L$ accès, soit $\frac{n}{L}$ défauts de cache. Lorsque `j` varie, la même ligne sera accédée de manière répétée dans le cache, ce qui se traduira par des hits (`j` n'apparaît pas dans l'indexation de A). Comme la capacité du cache est suffisamment importante pour contenir $n$ éléments, aucun défaut de cache supplémentaire ne se produit pour `j` allant de $1$ à $n-1$.  Le coût total de l'exécution de toutes les itérations de `j` est juste une fois le coût déjà déterminé pour l'exécution de toutes les itérations de la boucle la plus interne. Les mêmes coûts se répètent pour chaque itération `i`, lorsque différentes lignes de A sont accédées. En effet, comme on fait varier la boucle la plus extérieure (`i`), pour chaque valeur distincte de `i`, on accède à différentes lignes de A, et on a une répétition du nombre d'échecs correspondant à `i=0`. Le nombre total de défauts de cache est donc en $O(\frac{n^2}{L})$ pour les caches à mappage direct et les caches complètement associatifs. 
 
-Pour `i` et `j` fixés, lorsque `k` varie, on accède aux éléments d'une colonne de B. Lorsque `j` est incrémenté, la colonne adjacente de B est chargée, mais il y aura des défauts de cache pour un cache à mappage direct (et des hits pour un cache entièrement associatif puisque seules les lignes $\frac{n}{L}$ seront utilisées). Une réutilisation est possible dans la boucle `i` car le cache est supposé très grand. Ainsi, les erreurs pour un cache direct seront en $O(n^2)$.
+Pour `i` et `j` fixés, lorsque `k` varie, on accède aux éléments d'une colonne de B. Lorsque `j` est incrémenté, la colonne adjacente de B est chargée, mais il y aura des défauts de cache pour un cache à mappage direct (et des hits pour un cache entièrement associatif puisque seules les lignes $\frac{n}{L}$ seront utilisées). Une réutilisation est possible dans la boucle `i` car le cache est supposé très grand. Ainsi, les erreurs pour un cache direct seront en $O(\frac{n^2}{L})$.
 
 Similaire à la matrice A, il y aura une réutilisation des coefficients à la fois temporelle et spatiale pour la matrice C. Le nombre total de défauts de cache sera donc en $O(\frac{n^2}{L})$.
 
-Finalement, on a $O(n^2 + \frac{n^2}{L})$ défauts de cache.
+Finalement, on a $O(\frac{n^2}{L})$ défauts de cache.
 
 ---
 
@@ -307,4 +308,4 @@ ce qui donne
 $$
 Q(n) = O(\frac{n^3}{L.\sqrt{Z}})
 $$
-Cet algorithme atteint asymptotiquement la même performance que l’algorithme précé-dent sans qu’il ne soit nécessaire de de connaître la taille du cache.
+Cet algorithme atteint asymptotiquement la même performance que l’algorithme précédent sans qu’il ne soit nécessaire de de connaître la taille du cache.
