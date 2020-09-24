@@ -21,6 +21,8 @@ Le programme `(i, j, k)` est le plus long à l'exécution.
 
 ![Temps d'exécution pour n allant de 100 à 1000 par pas de 100.](matrix-product-gnuplot.png)
 
+Les deux programmes semblent bien en $$\Theta{n^3}$$.
+
 \newpage
 
 # Q2. Mesures de défauts de cache
@@ -182,13 +184,13 @@ matrix2d_product_ikj() took 0.785889 seconds to execute for an entry n = 1000
 
 # Q3. Analyse du travail en nombre d’opérations
 
-$$W_x(n) = n^3$$ 
-$$W_+(n) = n^3$$ 
-$n^2$ additions sur `ptC` et $n^3$ additions sur `ptA` et `ptB` pour le programme `(i, j, k)`.
-
-$n^2$ additions sur `ptA` et $n^3$ additions sur `ptB` et `ptB` pour le programme `(i, k, j)`.
-$$W_{ptr+}(n) = n^3$$ 
-$$W_{ptrx}(n) = 2n^2(n + 1)$$ 
+\begin{enumerate}
+	\item $$W_{\times}(n)$$ : on fait $$n^3$$ multiplications entre ptA et ptB (trois boucles) pour l'algorithme (i, j, k). Le raisonnement est analogique pour l'algorithme (i, k, j).
+	\item $$W_+(n)$$ : on fait $$n^3$$ additions entre ptC et ptA * ptB (trois boucles) pour l'algorithme (i, j, k). Le raisonnement est analogique pour l'algorithme (i, k, j).
+	\item Le nombre d'additions de pointeurs sur ptC est $$n^2$$ (deux boucles) et le nombre d'additions de pointeurs sur ptA et ptB est $$n^3$$ (trois boucles, algorithme (i, j, k)). Le nombre d'additions de pointeurs sur ptA est $$n^2$$ (deux boucles) et le nombre d'additions de pointeurs sur ptB et ptC est $$n^3$$ (trois boucles, algorithme (i, k, j)).
+	\item $$W_{ptr+}(n) = 0$$ car dans les boucles, on est sur des valeurs pointées et non sur des pointeurs (it's a trap).
+	\item $$W_{ptrx}(n) = n^2 + n^3$$ car on a $$n^2$$ additions et $$n^3$$ additions (pour les deux algorithmes). 
+\end{enumerate}
 
 Les deux programmes effectuent un nombre analogue d'opérations: $O(n^3)$.
 
@@ -222,39 +224,11 @@ Supposons que le cache est très grand pour contenir les trois matrices $A$, $B$
 
 **Le programme `(i, j, k)`**
 
-A est indexé comme `A[i][k]`, pour $n$ itérations de `k`, pour `i` et `j` fixés à 0, la séquence d'accès est `A[0][0], A[0][1], A[0][2], ... A[0][n-1]`. Étant donné que des éléments de mémoire contigus sont accédés, il y aura un échec tous les $L$ accès, soit $\frac{n}{L}$ défauts de cache. Lorsque `j` varie, la même ligne sera accédée de manière répétée dans le cache, ce qui se traduira par des hits (`j` n'apparaît pas dans l'indexation de A). Comme la capacité du cache est suffisamment importante pour contenir $n$ éléments, aucun défaut de cache supplémentaire ne se produit pour `j` allant de $1$ à $n-1$.  Le coût total de l'exécution de toutes les itérations de `j` est juste une fois le coût déjà déterminé pour l'exécution de toutes les itérations de la boucle la plus interne. Les mêmes coûts se répètent pour chaque itération `i`, lorsque différentes lignes de A sont accédées. En effet, comme on fait varier la boucle la plus extérieure (`i`), pour chaque valeur distincte de `i`, on accède à différentes lignes de A, et on a une répétition du nombre d'échecs correspondant à `i=0`. Le nombre total de défauts de cache est donc en $O(\frac{n^2}{L})$ pour les caches à mappage direct et les caches complètement associatifs. 
-
-Pour `i` et `j` fixés, lorsque `k` varie, on accède aux éléments d'une colonne de B. Lorsque `j` est incrémenté, la colonne adjacente de B est chargée, mais il y aura des défauts de cache pour un cache à mappage direct (et des hits pour un cache entièrement associatif puisque seules les lignes $\frac{n}{L}$ seront utilisées). Une réutilisation est possible dans la boucle `i` car le cache est supposé très grand. Ainsi, les erreurs pour un cache direct seront en $O(\frac{n^2}{L})$.
-
-Similaire à la matrice A, il y aura une réutilisation des coefficients à la fois temporelle et spatiale pour la matrice C. Le nombre total de défauts de cache sera donc en $O(\frac{n^2}{L})$.
-
-Finalement, on a $O(\frac{n^2}{L})$ défauts de cache.
-
----
-
-Regardons plus en détail l'impact de $Z$ sur les défauts de cache.
-
-Si $3L < Z$, le calcul de chaque coefficient de la matrice C donne $O(1 + \frac{n}{L})$ défauts de cache.
-
-Si $Z$ est assez grand, par exemple $Z = \Theta(n)$, alors la ligne `i` de A sera dans le cache pour le calcul de tous les coefficients de C.
-
-Pour qu'une colonne quelconque de B soit tiré du cache, il faut $Z = \Theta(n^2)$. Dans ce cas tous les calculs tiennent dans le cache.
-On a donc:
-$$
-\begin{array}{ll}
-    Q(n, Z, L) = O(n^2 + \frac{n^3}{L}) & \text{si } 3L \leq Z < n^2\\
-    Q(n, Z, L) = O(n + \frac{n^2}{L}) & \text{si } 3n^2 \leq Z
-\end{array}
-$$
+Comme une matrice a $$n^2$$ éléments et qu'on suppose $$Z > 3n^2$$ alors il y aura $$O(n^2/L)$$ défauts de cache par matrice (on remplace jamais des lignes de cache selon la politique LRU comme notre cache est assez grand pour toutes les contenir), soit $$Q(n, L, Z) = O(3n^2/L)$$ défauts de cache au total. 
 
 **Le programme `(i, k, j)`**
-La matrice A prends la place de la matrice C dans le programme `(i, j, k)`. Le nombre total de défauts de cache est en $O(\frac{n^2}{L})$.
 
-On exploite la localité puisque la matrice B est accessible par ligne dans la boucle la plus interne. Une réutilisation temporelle est possible, car la capacité est suffisante pour contenir tout B jusqu'à ce que la boucle extérieure `i` change. Ainsi, il y aura $O(\frac{n^2}{L})$ défauts de cache pour les caches à mappage direct et les caches complètement associatifs.
-
-Pour `i` et `k` fixés, lorsque `j` varie, on accède à la ligne `i` de la matrice C, occupant $frac{n}{L}$ lignes adjacentes dans le cache. Lorsque `k` varie, la même ligne sera accédée de façon répétée dans le cache. Ainsi, on avec un cache à mappage direct ou entièrement associatif $O(\frac{n^2}{L})$ défauts de cache.
-
-Finalement, on a aussi $O(\frac{n^2}{L})$ défauts de cache.
+On procède pareil que pour l'algorithme (i, k, j) : comme une matrice a $$n^2$$ éléments et qu'on suppose $$Z > 3n^2$$ alors il y aura $$O(n^2/L)$$ défauts de cache par matrice (on remplace jamais des lignes de cache selon la politique LRU comme notre cache est assez grand pour toutes les contenir), soit $$Q(n, L, Z) = O(3n^2/L)$$ défauts de cache au total. On peut penser qu'on fera plus de défauts de cache comme B n'est pas parcourue dans le sens du stockage (row-major), mais non car encore une fois, aucune ligne de cache n'est remplacée par une autre, comme on a supposé la taille du cache plus grande que la taille des trois matrices réunies.
 
 \newpage
 
@@ -264,18 +238,18 @@ Le cache est très petit, soit `Z << n`. On suppose qu'une ligne de nos matrices
 
 **Le programme `(i, j, k)`**
 
-Lors du calcul du premier coefficient, on a $\frac{n}{L} + n$ défauts de cache. La localité spatiale est bonne pour les accès à la matrice A mais mauvaise pour les accès à la matrice B. En effet, chaque lecture d’un coefficient de B charge une ligne de cache entière contenant plusieurs coefficients mais un seul est utilisé. On doit charger dans le cache la **ligne** `A[i,:]` ce qui cause $\frac{n}{L}$ défauts de cache et la **colonne** `B[:,j]` ce qui cause $n$ défauts de cache.
-On a le même nombre de défauts de cache pour le calcul du second coefficient etc... On a donc $n^2*(\frac{n}{L} + n)$ défauts de cache sur les matrices A et B.
+Lors du calcul du premier coefficient, on a $\frac{n}{L} + n$ défauts de cache. La localité spatiale est bonne pour les accès à la matrice A mais mauvaise pour les accès à la matrice B. En effet, chaque lecture d’un coefficient de B charge une ligne de cache entière contenant plusieurs coefficients mais un seul est utilisé. On doit charger dans le cache la **ligne** `A[i,:]` ce qui cause $\frac{n}{L}$ défauts de cache et la **colonne** `B[:,j]` ce qui cause $n$ défauts de cache (car $$Z << n$$).
+On a le même nombre de défauts de cache pour le calcul du second coefficient etc... On a donc $n^2*(\frac{n}{L} + n)$ défauts de cache sur les matrices A et B (car $$\frac{n}{L} + n > n$$.
 
-Si une ligne ou une colonne est plus grande que la taille du cache, on ne peut réutiliser les données entre les calculs des éléments de la matrice C. Les accès à la matrice C sont linéaires, ils causent $\frac{n^2}{L}$ défauts de cache.
+Si une ligne ou une colonne est plus grande que la taille du cache, on ne peut réutiliser les données entre les calculs des éléments de la matrice C. Les accès à la matrice C sont linéaires, ils causent $O(\frac{n^2}{L})$ défauts de cache. Détaillons plus précisément : avec i et j fixés, nous ne sommes pas surs de faire un seul défaut de cache pour $$C(i, j)$$. En effet, on va stocker $$C(i, j)$$ en cache, puis traiter les coefficients de A et B mais pour A et B, on a $$\frac{n}{L} + n$$ défauts de cache. Or $$Z << n$$ et $$\frac{n}{L} + n > n$$ donc selon la politique LRU, on remplace la plus ancienne valeur en cache par la plus récente, donc on remplace $$C(i, j)$$ pour mettre une ligne de valeurs de A/B. Donc, avec i et j fixés, on aura forcément un moment où on va stocker au moins 2 fois $$C(i, j)$$, d'où le $$O(\frac{n^2}{L})$ défauts de cache pour C.
 
-Ainsi $Q(n, Z, L) = O(n^3 + \frac{n^3}{L})$.
+Ainsi $Q(n, L, Z) = O(n^3)$.
 
 **Le programme `(i, k, j`)**
 
-On a $Q(n, Z, L) = O(\frac{n^3}{L} + \frac{n^2}{L})$.
+On a $Q(n, L, Z) = O(\frac{n^3}{L} + \frac{n^2}{L})$.
 
-On exploite la localité puisque la matrice B est accessible par ligne dans la boucle la plus interne. Mais une réutilisation temporaire n'est pas possible, car la capacité est insuffisante pour contenir tout B jusqu'à ce que la boucle extérieure `i` change. Ainsi, il y aura $O(\frac{n^3}{L})$ défauts de cache pour les caches à mappage direct et les caches complètement associatifs.
+On exploite la localité puisque la matrice B est accessible par ligne dans la boucle la plus interne. Mais une réutilisation temporaire n'est pas possible, car la capacité est insuffisante pour contenir tout B jusqu'à ce que la boucle extérieure `i` change. Ainsi, il y aura $O(\frac{n^3}{L})$ défauts de cache pour les caches à mappage direct et les caches complètement associatifs. 
 
 \newpage
 
