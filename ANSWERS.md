@@ -21,7 +21,7 @@ Le programme `(i, j, k)` est le plus long à l'exécution.
 
 ![Temps d'exécution pour n allant de 100 à 1000 par pas de 100.](matrix-product-gnuplot.png)
 
-Les deux programmes semblent bien en $$\Theta{n^3}$$.
+Les deux programmes semblent bien en $\Theta(n^3)$.
 
 \newpage
 
@@ -184,13 +184,11 @@ matrix2d_product_ikj() took 0.785889 seconds to execute for an entry n = 1000
 
 # Q3. Analyse du travail en nombre d’opérations
 
-\begin{enumerate}
-	\item $$W_{\times}(n)$$ : on fait $$n^3$$ multiplications entre ptA et ptB (trois boucles) pour l'algorithme (i, j, k). Le raisonnement est analogique pour l'algorithme (i, k, j).
-	\item $$W_+(n)$$ : on fait $$n^3$$ additions entre ptC et ptA * ptB (trois boucles) pour l'algorithme (i, j, k). Le raisonnement est analogique pour l'algorithme (i, k, j).
-	\item Le nombre d'additions de pointeurs sur ptC est $$n^2$$ (deux boucles) et le nombre d'additions de pointeurs sur ptA et ptB est $$n^3$$ (trois boucles, algorithme (i, j, k)). Le nombre d'additions de pointeurs sur ptA est $$n^2$$ (deux boucles) et le nombre d'additions de pointeurs sur ptB et ptC est $$n^3$$ (trois boucles, algorithme (i, k, j)).
-	\item $$W_{ptr+}(n) = 0$$ car dans les boucles, on est sur des valeurs pointées et non sur des pointeurs (it's a trap).
-	\item $$W_{ptrx}(n) = n^2 + n^3$$ car on a $$n^2$$ additions et $$n^3$$ additions (pour les deux algorithmes). 
-\end{enumerate}
+ - $W_{\times}(n)$ : on fait $n^3$ multiplications entre `ptA` et `ptB` (trois boucles) pour l'algorithme `(i, j, k)`. Le raisonnement est analogique pour l'algorithme `(i, k, j)`.
+ - $W_+(n)$ : on fait $n^3$ additions entre `ptC` et `ptA * ptB` (trois boucles) pour l'algorithme `(i, j, k)`. Le raisonnement est analogique pour l'algorithme `(i, k, j)`.
+ - Le nombre d'additions de pointeurs sur `ptC` est $n^2$ (deux boucles) et le nombre d'additions de pointeurs sur `ptA` et `ptB` est $n^3$ (trois boucles, algorithme `(i, j, k)`). Le nombre d'additions de pointeurs sur `ptA` est $n^2$ (deux boucles) et le nombre d'additions de pointeurs sur `ptB` et `ptC` est $n^3$ (trois boucles, algorithme `(i, k, j)`).
+ - $W_{ptr+}(n) = 0$ car dans les boucles, on est sur des valeurs pointées et non sur des pointeurs (it's a trap).
+ - $W_{ptrx}(n) = n^2 + n^3$ car on a $n^2$ additions et $n^3$ additions (pour les deux algorithmes). 
 
 Les deux programmes effectuent un nombre analogue d'opérations: $O(n^3)$.
 
@@ -224,11 +222,11 @@ Supposons que le cache est très grand pour contenir les trois matrices $A$, $B$
 
 **Le programme `(i, j, k)`**
 
-Comme une matrice a $$n^2$$ éléments et qu'on suppose $$Z > 3n^2$$ alors il y aura $$O(n^2/L)$$ défauts de cache par matrice (on remplace jamais des lignes de cache selon la politique LRU comme notre cache est assez grand pour toutes les contenir), soit $$Q(n, L, Z) = O(3n^2/L)$$ défauts de cache au total. 
+Comme une matrice a $n^2$ éléments et qu'on suppose $Z > 3n^2$ alors il y aura $O(\frac{n^2}{L})$ défauts de cache par matrice (on remplace jamais des lignes de cache selon la politique LRU comme notre cache est assez grand pour toutes les contenir), soit $Q(n, L, Z) = O(3\frac{n^2}{L})$ défauts de cache au total. 
 
 **Le programme `(i, k, j)`**
 
-On procède pareil que pour l'algorithme (i, k, j) : comme une matrice a $$n^2$$ éléments et qu'on suppose $$Z > 3n^2$$ alors il y aura $$O(n^2/L)$$ défauts de cache par matrice (on remplace jamais des lignes de cache selon la politique LRU comme notre cache est assez grand pour toutes les contenir), soit $$Q(n, L, Z) = O(3n^2/L)$$ défauts de cache au total. On peut penser qu'on fera plus de défauts de cache comme B n'est pas parcourue dans le sens du stockage (row-major), mais non car encore une fois, aucune ligne de cache n'est remplacée par une autre, comme on a supposé la taille du cache plus grande que la taille des trois matrices réunies.
+On procède pareil que pour l'algorithme `(i, k, j)` : comme une matrice a $n^2$ éléments et qu'on suppose $Z > 3n^2$ alors il y aura $O(\frac{n^2}{L})$ défauts de cache par matrice (on remplace jamais des lignes de cache selon la politique LRU comme notre cache est assez grand pour toutes les contenir), soit $Q(n, L, Z) = O(3\frac{n^2}{L})$ défauts de cache au total. On peut penser qu'on fera plus de défauts de cache comme B n'est pas parcourue dans le sens du stockage (row-major), mais non car encore une fois, aucune ligne de cache n'est remplacée par une autre, comme on a supposé la taille du cache plus grande que la taille des trois matrices réunies.
 
 \newpage
 
@@ -238,10 +236,10 @@ Le cache est très petit, soit `Z << n`. On suppose qu'une ligne de nos matrices
 
 **Le programme `(i, j, k)`**
 
-Lors du calcul du premier coefficient, on a $\frac{n}{L} + n$ défauts de cache. La localité spatiale est bonne pour les accès à la matrice A mais mauvaise pour les accès à la matrice B. En effet, chaque lecture d’un coefficient de B charge une ligne de cache entière contenant plusieurs coefficients mais un seul est utilisé. On doit charger dans le cache la **ligne** `A[i,:]` ce qui cause $\frac{n}{L}$ défauts de cache et la **colonne** `B[:,j]` ce qui cause $n$ défauts de cache (car $$Z << n$$).
-On a le même nombre de défauts de cache pour le calcul du second coefficient etc... On a donc $n^2*(\frac{n}{L} + n)$ défauts de cache sur les matrices A et B (car $$\frac{n}{L} + n > n$$.
+Lors du calcul du premier coefficient, on a $\frac{n}{L} + n$ défauts de cache. La localité spatiale est bonne pour les accès à la matrice A mais mauvaise pour les accès à la matrice B. En effet, chaque lecture d’un coefficient de B charge une ligne de cache entière contenant plusieurs coefficients mais un seul est utilisé. On doit charger dans le cache la **ligne** `A[i,:]` ce qui cause $\frac{n}{L}$ défauts de cache et la **colonne** `B[:,j]` ce qui cause $n$ défauts de cache (car $Z << n$).
+On a le même nombre de défauts de cache pour le calcul du second coefficient etc... On a donc $n^2*(\frac{n}{L} + n)$ défauts de cache sur les matrices A et B (car $\frac{n}{L} + n > n$).
 
-Si une ligne ou une colonne est plus grande que la taille du cache, on ne peut réutiliser les données entre les calculs des éléments de la matrice C. Les accès à la matrice C sont linéaires, ils causent $O(\frac{n^2}{L})$ défauts de cache. Détaillons plus précisément : avec i et j fixés, nous ne sommes pas surs de faire un seul défaut de cache pour $$C(i, j)$$. En effet, on va stocker $$C(i, j)$$ en cache, puis traiter les coefficients de A et B mais pour A et B, on a $$\frac{n}{L} + n$$ défauts de cache. Or $$Z << n$$ et $$\frac{n}{L} + n > n$$ donc selon la politique LRU, on remplace la plus ancienne valeur en cache par la plus récente, donc on remplace $$C(i, j)$$ pour mettre une ligne de valeurs de A/B. Donc, avec i et j fixés, on aura forcément un moment où on va stocker au moins 2 fois $$C(i, j)$$, d'où le $$O(\frac{n^2}{L})$ défauts de cache pour C.
+Si une ligne ou une colonne est plus grande que la taille du cache, on ne peut réutiliser les données entre les calculs des éléments de la matrice C. Les accès à la matrice C sont linéaires, ils causent $O(\frac{n^2}{L})$ défauts de cache. Détaillons plus précisément : avec `i` et `j` fixés, nous ne sommes pas surs de faire un seul défaut de cache pour `C(i, j)`. En effet, on va stocker `C(i, j)` en cache, puis traiter les coefficients de A et B mais pour A et B, on a $\frac{n}{L} + n$ défauts de cache. Or $Z << n$ et $\frac{n}{L} + n > n$ donc selon la politique LRU, on remplace la plus ancienne valeur en cache par la plus récente, donc on remplace `C(i, j)` pour mettre une ligne de valeurs de A/B. Donc, avec `i` et `j` fixés, on aura forcément un moment où on va stocker au moins 2 fois `C(i, j)`, d'où le $O(\frac{n^2}{L})$ défauts de cache pour C.
 
 Ainsi $Q(n, L, Z) = O(n^3)$.
 
@@ -262,7 +260,7 @@ Si la taille $B$ du block vérifie $3B^2 < Z$, on peut conserver à tout instant
 Multiplier deux blocs ne cause pas de défauts de cache en dehors de la lecture des blocs de A et B et de l’écriture du résultat dans C.
 Pour chaque bloc dans la matrice C, on doit lire $\frac{n}{B}$ blocs dans la matrice A et dans la matrice B. La lecture d’un bloc cause $\frac{B^2}{L}$ défauts de cache. On a donc au total:
 $$\bigg(\frac{n}{B}\bigg)^2\bigg(\frac{n}{B} * 2 * \frac{B^2}{L} + \frac{B^2}{L}\bigg) = O\bigg(\frac{n^3}{B.L}\bigg)$$
-On veut $B$ le plus grand possible sachant que $3B^2 < Z$ . On prend donc $B = \sqrt{\frac{Z}{3}}$, ce qui donne $Q(n) = O(\frac{n^3}{B·√Z})$ défauts de cache.
+On veut $B$ le plus grand possible sachant que $3B^2 < Z$ . On prend donc $B = \sqrt{\frac{Z}{3}}$, ce qui donne $Q(n) = O(\frac{n^3}{L.\sqrt{Z}})$ défauts de cache.
 
 L’algorithme précédent a besoin de connaître la taille du cache Z. On peut atteindre la même borne sans utiliser cette valeur et obtenir ainsi un algorithme cache-oblivious. Pour cela on utilise l’algorithme de multiplication de matrices diviser pour régner. On décompose récursivement le produit en 8 produits de matrices $n/2$ par $n/2$. La complexité en nombre d’instructions est
 $$
