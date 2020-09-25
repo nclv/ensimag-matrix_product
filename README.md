@@ -75,7 +75,7 @@ The ratio of cache-misses to instructions will give an indication how well the c
 
 The higher IPC (Instruction per clock cycle) the more efficiently the processor is executing instruction on the system. The IPC will be affected by delay due to cache misses.
 
-# Commands gnuplot
+# GnuPlot
 
 apt-get install gnuplot
 gnuplot 5.2 the latest version
@@ -88,8 +88,9 @@ is drawing on screen a graph with 2 and 3 in function of 1
 
 See [notes.md](NOTES.md)
 
-# Answers
+# The Answers
 
 See [answers.md](ANSWERS.md) or [answers.pdf](ANSWERS.pdf).
 
+Command to generate the PDF file:
 `pandoc ANSWERS.md -o ANSWERS.pdf --from markdown --template ~/.local/share/pandoc/templates/eisvogel.tex --listings --pdf-engine=xelatex`
