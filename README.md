@@ -1,12 +1,3 @@
-# Links
-
-See :
- - https://levelup.gitconnected.com/c-programming-hacks-4-matrix-multiplication-are-we-doing-it-right-21a9f1cbf53
- - https://www.cse.iitm.ac.in/~rupesh/teaching/hpc/jun16/examples-cache-mm.pdf
- - https://cs.brown.edu/courses/cs033/lecture/18cacheX.pdf
- - https://www.quora.com/How-can-we-use-cache-s-for-optimization-of-matrix-multiplication
- - https://akkadia.org/drepper/cpumemory.pdf (6.2.1)
-
 # Commands and explainations
 
 Use `getconf LEVEL1_DCACHE_LINESIZE` to get L1 cache size linesize.
@@ -94,3 +85,11 @@ See [answers.md](ANSWERS.md) or [answers.pdf](ANSWERS.pdf).
 
 Command to generate the PDF file:
 `pandoc ANSWERS.md -o ANSWERS.pdf --from markdown --template ~/.local/share/pandoc/templates/eisvogel.tex --listings --pdf-engine=xelatex`
+
+# Links
+ - [The impact of cache locality on performance in C through matrix multiplication](https://levelup.gitconnected.com/c-programming-hacks-4-matrix-multiplication-are-we-doing-it-right-21a9f1cbf53)
+ - [Examples of Cache Miss Estimation for Matrix Multiplication](https://www.cse.iitm.ac.in/~rupesh/teaching/hpc/jun16/examples-cache-mm.pdf)
+ - [CS33 Caches](https://cs.brown.edu/courses/cs033/lecture/18cacheX.pdf)
+ - [How can we use cache(s) for optimization of matrix multiplication?](https://www.quora.com/How-can-we-use-cache-s-for-optimization-of-matrix-multiplication)
+ - [6.2.1    Optimizing Level 1 Data Cache Access](https://akkadia.org/drepper/cpumemory.pdf)
+
