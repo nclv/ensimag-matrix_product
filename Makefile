@@ -1,6 +1,6 @@
 # UTILISATION
 # make
-# make matrix-product équivalent à gcc matrix-product.c matrix-product.c -o matrix-product
+# make matrix-product équivalent à gcc -c matrix-product.c -o matrix-product
 
 # make clean
 # make clean_executable
@@ -44,8 +44,8 @@ clean_all: clean clean_executable
 
 clean:
 	$(info Suppression des .su, .o, .h.gch)
-	rm -rf *.su *.o *.su *.o *~ *.h.gch cachegrind.out.*
+	rm -rf *.su *.o *~ *.h.gch cachegrind.out.*
 
 clean_executable:
-	$(info Supression des exécutables)
+	$(info Suppression des exécutables)
 	rm -rf $(TARGET)
